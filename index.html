@@ -1,0 +1,1072 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-lang="pt">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Bap - Sampler Looper By chapa</title>
+<meta name="description" content="Sampler de 64 pads (16 × 4 bancos) com CHOP LAB, 23 módulos internos e captura do áudio do sistema. Windows e Linux. Gratuito, sem instalador.">
+<meta property="og:title" content="Bap - Sampler Looper By chapa">
+<meta property="og:description" content="64 pads, 23 efeitos, CHOP LAB, captura do áudio do sistema. Windows e Linux. Sem instalador, sem ativação online.">
+<meta property="og:image" content="img/wave-signal.png">
+<meta property="og:type" content="website">
+<style>
+/* ============================================================================
+   Bap — landing page. Um arquivo, sem build, sem CDN, sem fonte externa.
+
+   DIRECAO DE ARTE — "A FACEPLATE".
+   A pagina nao e' um site sobre um sampler: e' o painel frontal do Bap. Cada
+   secao e' uma zona do chassi — etiqueta serigrafada em trilho, equipamento
+   montado em bisel, placa de ficha. O vocabulario de layout vem do aparelho:
+   bisel, face de rack com hairlines compartilhadas, visor, serigrafia.
+   Duas arquetipos de secao, alternados de proposito (ritmo):
+     .plate = trilho de etiqueta a' esquerda + conteudo (ficha/lista)
+     .zone  = faixa full-bleed escura do chassi (equipamento: fita de telas, rack)
+
+   A PALETA E A FACE SAO AS DO APP — copiadas da fonte, nao escolhidas a dedo:
+     * as cores: `Source/ui/layout/DynamicTheme.cpp:45-71` (`kFactoryArgb`) — o tema
+       de FABRICA "SP-303 VINYL GOLD", que e' o que o operador ve no primeiro arranque
+       e para onde o RESET da paleta volta (o preset de mesmo nome repete a tabela,
+       `DynamicTheme.cpp:657-689`);
+     * a face: o perfil de fabrica usa `FontFace::condensed`
+       (`Source/ui/layout/DynamicTheme.h:187-209` — o `font` do `Skin` de fabrica, em
+       :197), que e' a sans de FABRICA do sistema (`Font::getDefaultSansSerifFontName()`)
+       com escala HORIZONTAL de 86% (`Source/ui/Theme.h:112-117`). No Windows essa sans
+       e' a Verdana (`juce_DirectWriteTypeface_windows.cpp:430`, JUCE 8.0.15).
+   Cada token abaixo diz de QUAL `ColourId` ele veio: mudou a tabela do app, muda aqui.
+
+   PAPEIS DA COR (nada de cor decorativa):
+     * chassi/serigrafia = fundo e texto;
+     * OURO = marca, acao e leitura (o neon/led do app);
+     * VERMELHO DO VISOR = SO' o que a maquina SINALIZA (aviso de plataforma, risco
+       na primeira execucao). Nunca enfeite: LED que nao sinaliza foi removido.
+   ============================================================================ */
+:root{
+  /* --- chassi e superficies (fundo -> painel -> face de modulo -> bisel) ---
+         ESTA TABELA E' A DO APP (`Source/ui/Theme.h`), na pele "Classic Lo-Fi
+         Vintage": carvao QUENTE + serigrafia MARFIM + UM acento ambar-LED.
+         Antes ela era um cinza FRIO (chassi #161618, tinta #ededef, ouro
+         amarelo #eab308), que e' a pele de fabrica do vinil SP-303: a pagina e
+         o aparelho falavam em duas temperaturas de cor, e e' por isso que a
+         lataria lia como pagina web e nao como instrumento.
+
+         ONDE O VALOR DO APP E' MAIS CLARO, O HEXADECIMAL NAO FOI COPIADO.
+         `metal()` (a face do modulo) e' #3e3a31 la'; aqui ela mantem a
+         LUMINANCIA antiga e ganha so' a temperatura. Motivo medido: levantar a
+         face para #3e3a31 derruba o `--faint` (o texto miudo de 11,5px) de
+         5,1:1 para 3,4:1 nessa superficie — o texto miudo reprovaria na WCAG AA.
+         (O `_audit.js` remede este numero: se a nota virar mentira, ele acusa.)
+         O bisel (`metalLow()`) segue a mesma regra pelo mesmo motivo, porque e'
+         o fundo do gradiente onde vive o relogio do A/B. --- */
+  --ink:#141310;        /* background   carvao quente (carcaca/fundo)        */
+  --ink2:#120c08;       /* lcdDark      o VIDRO (fundo dos visores)          */
+  --panel:#1d1b16;      /* panel        superficie elevada                   */
+  --panel2:#1e1a15;     /* metal        face do modulo (quente na mesma luz) */
+  --panel3:#342f26;     /* metalHi      bisel ILUMINADO (topo do modulo)     */
+  --metal-low:#131009;  /* metalLow     bisel em sombra (base do modulo)     */
+  --line:#38342a;       /* line         as bordas                            */
+  --line2:#5c5748;      /* rail         linhas ESTRUTURAIS (borda de quadro) */
+  --idle:#28241d;       /* dimGreen     o pad APAGADO                        */
+
+  /* --- a tinta: serigrafia -> tinta fraca. O app chama este par de
+         `dimText()`/`faintText()` e ele e' MARFIM QUENTE, nao branco frio.
+         O 3o nivel e' O TEXTO MIUDO; o `--sering` e o `--amber` que existiam
+         aqui nao eram lidos por regra nenhuma e sairam: token definido e nunca
+         usado e' uma tabela que mente — igual ao `--mono`, que se chamava
+         monoespacado e apontava para a propria face humana. Os numeros desta
+         escala moram no `_audit.js`. --- */
+  --text:#e9e2d2;       /* ink / dimText   a serigrafia MARFIM              */
+  --dim:#a79f8b;        /* inkSoft         o texto corrido                 */
+  --faint:#948b7a;      /* o texto MIUDO (quente na luz do tom antigo)     */
+
+  /* --- o acento: o AMBAR-LED (o sinal) e o VERMELHO DO VISOR (a maquina fala).
+         O app tem UM acento so' — `neon()` #FF9A16, com `amber()` no destaque —
+         e o vermelho `led()` guardado para REC/estouro/aviso. O ouro AMARELO
+         #eab308 daqui era o ouro do vinil SP-303, nao o ambar do MPC/JJOS. --- */
+  --gold:#ff9a16;       /* neon   — o ambar-LED do app                      */
+  --gold2:#ffc978;      /* amber  — o ambar CLARO (selecao/destaque)        */
+  --led:#ff2a18;        /* led    — vermelho LED (REC/estouro/aviso)        */
+  --lcd-ink:#1a1206;    /* lcdInk — a tinta escura SOBRE o ambar            */
+
+  /* --- A FACE HUMANA (titulos e prosa), na largura NATURAL. O perfil de fabrica
+         desenha esta familia com 86% (`condensed`, `Theme.h:112-117`), e a
+         primeira versao desta pagina imitou isso com `transform:scaleX(.86)` nos
+         titulos. Saiu, por dois motivos medidos: o `transform` nao mexe na caixa,
+         entao todo titulo terminava 14% antes da propria coluna (um vazio fixo a'
+         direita, que nunca alinha com o paragrafo abaixo), e o texto passa a ser
+         COMPOSTO — em 125% ou 150% de escala do Windows (o padrao da maioria dos
+         portateis) a tinta suaviza. A identidade condensada ficou onde e' honesta:
+         na SERIGRAFIA (caixa alta + tracking largo + peso 700). O titulo tambem
+         subiu para 700 — Verdana 400 em 52px e' larga e clara demais para
+         carregar um h1. --- */
+  --face:Verdana,Tahoma,Geneva,"DejaVu Sans",system-ui,sans-serif;
+  /* --- A SEGUNDA VOZ. Ela era `var(--face)`: o token se chamava `mono` e
+         resolvia para a MESMA Verdana — as duas vozes (maquina x prosa) eram
+         fingidas com caixa alta + tracking, sem uma segunda familia. O app fala
+         monoespacada em TODAS as telas (`Theme.h:92-104`: "a monoespacada do
+         sistema, a pixel (VT323) ou a condensada"), e o JUCE resolve a mono do
+         sistema para Consolas no Windows — e' essa a face que a pagina passa a
+         usar. DejaVu/Menlo cobrem Linux e macOS; Courier New fica por ultimo
+         como rede, porque existe em qualquer sistema. Sem webfont: nenhuma
+         requisicao de rede, nenhuma licenca a carregar. --- */
+  --mono:Consolas,"DejaVu Sans Mono",Menlo,Monaco,"Liberation Mono","Courier New",monospace;
+  --sans:var(--face);
+  --r2:14px; --bezel:18px;
+  --measure:660px;      /* a medida de texto corrido (--sub)                */
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  margin:0; background:var(--ink); color:var(--text); font-family:var(--sans);
+  line-height:1.6; -webkit-font-smoothing:antialiased;
+  /* o chassi: so' o grao do vinil (o app chama isso de textura de lataria). Os dois
+     halos radiais que havia aqui eram enfeite de landing — sairam. */
+  background-image:repeating-linear-gradient(0deg, rgba(233,226,210,.016) 0 1px, transparent 1px 3px);
+}
+.wrap{max-width:1140px;margin:0 auto;padding:0 24px}
+section{scroll-margin-top:78px}
+
+/* ---------------------------------------------------------------- foco ----*/
+/* Nao havia nenhum: o foco era o do navegador (praticamente invisivel no escuro). */
+:focus-visible{outline:2px solid var(--gold2);outline-offset:2px;border-radius:4px}
+.skip{position:absolute;left:-9999px;top:0;z-index:200;background:var(--gold);color:var(--lcd-ink);
+  font-family:var(--mono);font-size:13px;font-weight:700;padding:12px 16px;text-decoration:none}
+.skip:focus{left:8px;top:8px}
+
+/* ---------------------------------------------------------------- topbar --*/
+header{
+  position:sticky; top:0; z-index:50; backdrop-filter:blur(10px);
+  background:rgba(20,19,16,.9); border-bottom:1px solid var(--line);
+}
+.bar{display:flex;align-items:center;gap:18px;height:64px}
+.logo{font-family:var(--mono);font-weight:700;letter-spacing:.24em;font-size:19px;color:var(--text);
+  border:1px solid var(--line2);border-radius:8px;padding:7px 12px;background:linear-gradient(180deg,var(--panel2),var(--panel));
+  box-shadow:inset 0 1px 0 rgba(233,226,210,.05)}
+nav{display:flex;gap:20px;margin-left:auto;align-items:center;flex-wrap:wrap}
+nav a{color:var(--dim);text-decoration:none;font-size:13.5px;font-family:var(--mono);letter-spacing:.04em;text-transform:uppercase}
+.brand{display:flex;align-items:center;gap:10px}
+.by{font-family:var(--mono);font-size:11px;font-weight:700;letter-spacing:.16em;
+  text-transform:uppercase;color:var(--faint)}
+nav a:hover{color:var(--gold2)}
+.lang{display:flex;border:1px solid var(--line2);border-radius:8px;overflow:hidden;margin-left:6px}
+.lang button{
+  background:transparent;border:0;color:var(--dim);font-family:var(--mono);font-size:12px;font-weight:700;
+  letter-spacing:.1em;padding:9px 12px;cursor:pointer}
+.lang button[aria-pressed="true"]{background:var(--gold);color:var(--lcd-ink)}
+.burger{display:none;background:none;border:1px solid var(--line2);border-radius:8px;color:var(--text);padding:8px 10px;cursor:pointer}
+
+/* ------------------------------------------------------- voz da maquina --*/
+/* Duas vozes, uma familia: a SERIGRAFIA (etiqueta gravada, caixa alta, tracking
+   largo) e a VOZ HUMANA (frase corrida). O `.mono` e' a face da maquina sem
+   forcar caixa alta (rodape, leituras). Numeros tabulares: o `tabular-nums` fica
+   declarado para a face que tiver a feature `tnum`; na Verdana os digitos ja nascem
+   de largura igual, entao o relogio do A/B nao pula de largura ao contar. */
+.ser,.k{font-family:var(--mono);font-size:11.5px;font-weight:700;letter-spacing:.18em;text-transform:uppercase}
+.mono{font-family:var(--mono);font-variant-numeric:tabular-nums}
+.num,.clock,.spec b,table{font-variant-numeric:tabular-nums}
+
+/* ------------------------------------------------------------------ hero --*/
+.hero{display:grid;grid-template-columns:1.16fr .84fr;gap:46px;align-items:start;padding:66px 0 62px}
+.ver{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center;color:var(--faint);
+  font-family:var(--mono);font-size:11.5px;font-weight:700;letter-spacing:.16em;text-transform:uppercase}
+.ver i{display:inline-block;width:16px;height:1px;background:var(--line2);font-size:0}
+.ver .free{color:var(--gold2)}
+h1{font-size:clamp(31px,4.6vw,52px);line-height:1.06;margin:18px 0 16px;letter-spacing:-.025em;
+  font-weight:700;max-width:min(100%,640px);text-wrap:balance}
+h1 em{font-style:normal;color:var(--gold2)}
+.lead{color:var(--dim);font-size:16.5px;max-width:min(100%,620px);margin:0 0 26px}
+.lead b{color:var(--text)}
+
+/* a placa de numeros: os fatos duros do aparelho, gravados como numa ficha */
+.spec{display:grid;grid-template-columns:repeat(3,1fr);margin:30px 0 0;border-top:1px solid var(--line);
+  border-bottom:1px solid var(--line);max-width:min(100%,620px)}
+.spec div{padding:13px 16px;border-right:1px solid var(--line)}
+.spec div:nth-child(3n){border-right:0}
+.spec div:nth-child(-n+3){border-bottom:1px solid var(--line)}
+.spec b{display:block;font-family:var(--mono);font-size:20px;line-height:1.2;color:var(--gold2);font-weight:700}
+.spec span{display:block;font-family:var(--mono);font-size:10.5px;font-weight:700;letter-spacing:.14em;
+  text-transform:uppercase;color:var(--faint);margin-top:4px}
+
+.cta{display:flex;gap:12px;flex-wrap:wrap;align-items:center;margin:30px 0 0}
+.btn{display:inline-flex;align-items:center;gap:10px;text-decoration:none;font-family:var(--mono);font-size:13px;
+  font-weight:700;letter-spacing:.06em;text-transform:uppercase;padding:14px 20px;border-radius:10px;border:1px solid var(--line2);
+  background:linear-gradient(180deg,var(--panel2),var(--panel));color:var(--text);cursor:pointer;
+  transition:border-color .15s ease,color .15s ease,transform .15s ease}
+.btn:hover{border-color:var(--gold);color:var(--gold2)}
+.btn.primary{background:linear-gradient(180deg,var(--gold2),var(--gold));border-color:var(--gold2);color:var(--lcd-ink);
+  box-shadow:0 6px 22px rgba(255,154,22,.22)}
+.btn.primary:hover{color:var(--lcd-ink);filter:brightness(1.06)}
+/* o contorno dourado: destaque SEM disputar o primario (o unico solido e' o Baixar) */
+.btn.outline{border-color:var(--gold);color:var(--gold2);background:rgba(255,154,22,.06)}
+.btn.outline:hover{background:rgba(255,154,22,.12)}
+.btn.ghost{border-color:transparent;background:none;color:var(--dim);padding:14px 6px}
+.btn.ghost:hover{color:var(--gold2)}
+.note{margin:16px 0 0;font-size:12.5px;color:var(--faint);font-family:var(--mono)}
+
+/* apoio: a doacao flutuante acompanha a pagina inteira. O texto que morava no
+   hero vive agora dentro do cartao, atras do botao. Tres decisoes:
+   - o botao NAO e' solido: a regra da casa e' que o unico solido seja o Baixar,
+     entao ele usa o contorno dourado (.btn outline);
+   - mas com fundo OPACO (o gradiente do .btn), nao o contorno translucido: o
+     botao flutua sobre conteudo que muda, e tinta dourada sobre fundo que muda
+     nao tem contraste garantido. Com a face do modulo atras, o par e'
+     `gold2/panel2` = 11,43:1, que a auditoria ja' mede;
+   - o cartao usa a MESMA face dos cartoes de pacote (panel2 -> metal-low), onde
+     `gold2/panel2` e `dim/panel2` tambem ja' estao medidos. */
+.fab{position:fixed;right:18px;bottom:18px;z-index:60;display:flex;flex-direction:column-reverse;
+  align-items:flex-end;gap:10px}
+.fab .btn{font-size:12.5px;padding:11px 15px;border-radius:9px;border-color:var(--gold);color:var(--gold2);
+  background:linear-gradient(180deg,var(--panel2),var(--panel));box-shadow:0 10px 26px rgba(0,0,0,.45)}
+/* o brilho no hover e' o mesmo recurso do .btn.primary:hover: sem esta linha o
+   hover do .btn nao teria efeito nenhum aqui (mesma especificidade, minha regra
+   vem depois) e o botao ficaria mudo ao passar o mouse. */
+.fab .btn:hover{filter:brightness(1.08)}
+.fab .card{border:1px solid var(--line2);border-radius:var(--r2);padding:16px 18px;width:min(86vw,340px);
+  background:linear-gradient(180deg,var(--panel2),var(--metal-low));box-shadow:0 14px 38px rgba(0,0,0,.5)}
+.fab .card[hidden]{display:none}
+.fab .card .k{margin:0 0 7px;color:var(--gold2)}
+.fab .card p{margin:0 0 14px;font-size:14.5px;color:var(--dim)}
+
+/* --------------------------------------------------------------- bisel ----*/
+/* UM tratamento de moldura para tudo que e' tela: o bisel iluminado do app. */
+.bezel{border:1px solid var(--line2);border-radius:var(--bezel);padding:8px;
+  background:linear-gradient(180deg,var(--panel3),var(--metal-low));
+  box-shadow:0 20px 48px rgba(0,0,0,.55), inset 0 1px 0 rgba(233,226,210,.07)}
+.bezel img{display:block;width:100%;height:auto;border-radius:11px;background:#000}
+.bezel .tag{display:block;margin:9px 2px 1px;font-family:var(--mono);font-size:10.5px;font-weight:700;
+  letter-spacing:.16em;text-transform:uppercase;color:var(--faint)}
+.device{display:flex;justify-content:center}
+.device>div,.device>figure{width:100%;max-width:352px}
+.device.stack{flex-direction:column;align-items:center;gap:26px}
+.device.stack>figure{max-width:480px}
+.device.stack .duo{width:100%;max-width:480px}
+
+/* ------------------------------------------------------- zona de secao ---*/
+.zone{border-top:1px solid var(--line);background:var(--ink2);padding:58px 0}
+.plate{padding:66px 0;border-top:1px solid var(--line)}
+.sect{padding:66px 0;border-top:1px solid var(--line)}
+/* o RITMO das secoes: 58 na faixa de base, 66 nas fichas, 76 nas duas que carregam
+   peso — a vitrine de telas (o showpiece) e o download (a pergunta). Sem isso toda
+   secao respira igual e a pagina vira um metronomo. */
+#telas,#download{padding-top:76px;padding-bottom:76px}
+/* .plate: o trilho da etiqueta. No desktop a etiqueta fica PRESA enquanto a
+   secao passa (o rotulo do painel nao sai de vista). */
+.plate>.wrap{display:grid;grid-template-columns:190px minmax(0,1fr);gap:36px}
+.rail{align-self:start;position:sticky;top:86px;color:var(--gold);
+  border-left:1px solid var(--line2);padding-left:14px;margin:2px 0 0}
+.k{color:var(--gold);margin:0 0 12px}
+h2{font-size:clamp(24px,3.1vw,34px);margin:0 0 14px;letter-spacing:-.02em;line-height:1.16;
+  font-weight:700;max-width:min(100%,700px);text-wrap:balance}
+.sub{color:var(--dim);max-width:min(100%,var(--measure));margin:0 0 34px;text-wrap:pretty}
+h3{font-size:16.5px;font-weight:700;margin:0 0 8px;letter-spacing:-.01em}
+p{margin:0 0 14px}
+.ser{display:block;color:var(--gold);margin-bottom:9px}
+
+/* a secao dividida: conteudo a' esquerda, o equipamento a' direita */
+.hl{display:grid;grid-template-columns:1.04fr .96fr;gap:40px;align-items:start}
+.hl .device{order:2}
+.ticks{list-style:none;margin:0;padding:0}
+.ticks li{display:flex;gap:12px;padding:12px 0;border-bottom:1px solid var(--line);color:var(--dim);font-size:14.5px}
+.ticks li:before{content:"";flex:0 0 auto;width:7px;height:7px;margin-top:9px;background:var(--gold);
+  box-shadow:0 0 8px rgba(255,154,22,.5)}
+.ticks li b{color:var(--text);font-weight:600}
+
+/* a lista gravada (recursos): duas colunas de linhas com hairline, sem cartao */
+.rowlist{display:grid;grid-template-columns:1fr 1fr;gap:0 36px;border-top:1px solid var(--line)}
+.row{padding:22px 0;border-bottom:1px solid var(--line)}
+.row h3{margin-bottom:6px}
+.row p{color:var(--dim);font-size:14.5px;margin:0}
+.row ul{margin:9px 0 0;padding-left:17px;color:var(--dim);font-size:14.5px}
+.row li{margin:4px 0}
+
+/* a fita de telas: rolagem horizontal, como trocar de tela no aparelho */
+/* a fita: sangra ate' a borda e o primeiro painel alinha com a coluna de texto. O
+   `padding-inline` em `%` resolve contra o BLOCO da secao (a largura sem a barra de
+   rolagem), entao a conta `(100% - 1092px)/2` devolve exatamente a mesma vertical do
+   `.wrap` — sem `100vw`, que erra meia barra de rolagem. O painel encosta no tamanho
+   NATIVO do print (480px): antes, a 288px, o app era entregue a 0,60x e o texto de
+   11px da interface virava 6,6px — a secao existe para MOSTRAR a tela. */
+.strip{display:flex;gap:18px;overflow-x:auto;scroll-snap-type:x mandatory;
+  padding:6px max(24px,calc((100% - 1092px)/2)) 16px;scrollbar-color:var(--gold) var(--panel);
+  /* o vao da esquerda alinha o 1o painel com a coluna de texto — e o snap precisa do
+     MESMO vao declarado, senao cada painel encaixa em x=0 ao arrastar e a fita perde
+     a margem justamente depois do gesto. */
+  scroll-padding-left:max(24px,calc((100% - 1092px)/2))}
+/* Cada painel e' uma tela RETRATO (482x1004 = 1:2,08). Na largura nativa ele fica com
+   ~1000px de altura — mais alto que a area util de um portatil, ou seja, a tela inteira
+   NUNCA caberia na janela. Entao a largura do painel sai da ALTURA disponivel (29vh:
+   um painel de ~60vh, que deixa a legenda e o cabecalho cabendo junto), e o pixel exato
+   fica com o lightbox, que e' onde a interface se le de verdade. O piso de 210px segura
+   a barra em janela baixa (celular deitado); o teto de 480px impede ampliar o arquivo. */
+.strip .shot{flex:0 0 clamp(210px,29vh,480px);scroll-snap-align:start}
+.striphint{color:var(--faint);font-family:var(--mono);font-size:11px;font-weight:700;letter-spacing:.16em;
+  text-transform:uppercase;margin:6px 0 0;padding-left:max(24px,calc((100% - 1092px)/2))}
+
+/* ------------------------------------------------------------- lightbox --*/
+.shot{margin:0}
+.shot figcaption{margin-top:10px;font-family:var(--mono);font-size:11.5px;font-weight:700;letter-spacing:.1em;
+  text-transform:uppercase;color:var(--gold2)}
+.shot figcaption span{display:block;font-family:var(--sans);font-size:13px;font-weight:400;letter-spacing:0;
+  text-transform:none;color:var(--faint);margin-top:5px}
+.duo{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+/* a moldura inteira e' um BOTAO (teclado alcanca, o mouse amplia) */
+.zoom{display:block;width:100%;padding:0;border:0;background:none;cursor:zoom-in;text-align:left}
+.zoom .bezel{transition:transform .16s ease,border-color .16s ease}
+.zoom:hover .bezel{transform:translateY(-3px);border-color:var(--gold)}
+
+/* --------------------------------------------------------- rack de modulos */
+/* a face do rack: modulos com a hairline COMPARTILHADA (nao sao cartoes flutuantes) */
+.rack{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--line);
+  border:1px solid var(--line);border-radius:var(--r2);overflow:hidden}
+.module{background:var(--panel2);padding:18px}
+.module .ser{margin-bottom:11px;padding-bottom:10px;border-bottom:1px solid var(--line)}
+.module p{color:var(--dim);font-size:13.5px;margin:0}
+.rack.n3{grid-template-columns:repeat(3,1fr)}
+
+/* ----------------------------------------------------------------- temas --*/
+.themes{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+.theme{display:flex;flex-direction:column;border:1px solid var(--line);border-radius:var(--r2);
+  overflow:hidden;background:var(--panel2)}
+.theme img{display:block;width:100%;height:auto}
+/* a legenda vem ANTES da imagem: os quatro arquivos de tema tem proporccoes
+   levemente diferentes (480x954 contra 482x1001), entao as legendas caíam 23px
+   fora de nivel uma da outra — quatro titulos em quatro alturas le-se como grade
+   quebrada. Com a legenda em cima sao as BORDAS das imagens que ficam levemente
+   irregulares, e isso le-se como quatro fotos. */
+.theme .cap{order:-1;padding:12px 14px;border-bottom:1px solid var(--line)}
+.theme .cap b{display:block;font-family:var(--mono);font-size:11.5px;font-weight:700;letter-spacing:.1em;
+  color:var(--gold2);text-transform:uppercase}
+.theme .cap small{color:var(--faint);font-size:11.5px;font-family:var(--mono)}
+.theme.on{border-color:var(--gold);box-shadow:0 0 0 1px var(--gold)}
+
+/* --------------------------------------------------------------- audio ----*/
+/* a BANCADA: o instrumento no centro, os dois lados lado a lado, a leitura embaixo */
+.player{width:100%;border:1px solid var(--line2);border-radius:var(--r2);padding:18px;
+  background:linear-gradient(180deg,var(--panel3),var(--metal-low));box-shadow:0 20px 48px rgba(0,0,0,.5)}
+.player .head{display:flex;align-items:center;justify-content:space-between;gap:10px;font-family:var(--mono);
+  font-size:11px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--gold2);margin-bottom:14px;
+  padding-bottom:12px;border-bottom:1px solid var(--line)}
+.ab{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.ab .btn{cursor:pointer;justify-content:center;text-align:center;background:linear-gradient(180deg,var(--panel2),var(--panel));
+  color:var(--dim);font-size:12px;letter-spacing:.1em;padding:14px 12px}
+.ab .btn:hover{border-color:var(--gold);color:var(--gold2)}
+.ab .btn[aria-pressed="true"]{background:linear-gradient(180deg,var(--gold2),var(--gold));border-color:var(--gold2);color:var(--lcd-ink)}
+.ab .btn[aria-pressed="true"]:hover{color:var(--lcd-ink);filter:brightness(1.06)}
+.player .bar{height:6px;margin:14px 0 0;border:1px solid var(--line);border-radius:999px;background:var(--idle);overflow:hidden}
+.player .bar i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--gold),var(--gold2));
+  transition:width .12s linear}
+.clock{margin:9px 0 0;font-family:var(--mono);font-size:11.5px;letter-spacing:.1em;color:var(--faint);text-align:center}
+.player audio{display:none}
+.hint{margin:14px 0 0;font-size:12.5px;font-family:var(--mono);color:var(--faint)}
+
+/* ------------------------------------------------------------ ficha tecnica */
+table{width:100%;border-collapse:collapse;font-size:13.5px}
+th,td{text-align:left;padding:9px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-family:var(--mono);font-size:10.5px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--gold);width:150px}
+td{color:var(--dim)}
+td b{color:var(--text);font-weight:600}
+/* a ficha e' uma FOLHA DE REFERENCIA, nao conteudo de landing: ela fica DENSE de
+   proposito (13,5px, 9px de entrelinha de celula) e limitada a 780px — o valor
+   passa de ~107 para ~90 caracteres por linha, dentro do confortavel. Celula
+   larga e' o que faz uma ficha parecer enchimento de pagina. */
+#specs table{max-width:780px}
+/* o aparato da ficha: a enumeracao (os 23 nomes de modulo) recua para o registro
+   miudo, para a AFIRMACAO em negrito liderar a leitura da celula. E' um <small>
+   sem atributo DE PROPOSITO: o texto traduzivel mora dentro de `data-pt`/`data-en`,
+   entao qualquer aspa ali dentro fecha o atributo e quebra o HTML. */
+td small{font-family:var(--mono);font-size:11.5px;letter-spacing:.02em;color:var(--faint)}
+tr:hover td{background:rgba(233,226,210,.012)}
+
+/* ------------------------------------------------------------- download ---*/
+.dl{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.pkg{border:1px solid var(--line);border-radius:var(--r2);padding:22px;
+  background:linear-gradient(180deg,var(--panel2),var(--metal-low))}
+.pkg h3{font-family:var(--sans);font-size:16.5px;font-weight:700;letter-spacing:0;text-transform:none;
+  color:var(--text);margin:0 0 8px}
+.pkg p{font-size:13.5px;color:var(--dim)}
+.pkg .btn{margin-top:6px}
+/* O contador de downloads: o numero sai da API publica do GitHub, na Release onde
+   os .zip moram (repositorio so' de downloads; o codigo segue privado). A linha
+   nasce ESCONDIDA e so' aparece quando o numero chega -- numero que a pagina
+   inventasse seria pior que numero nenhum. Tinta: a `--faint` sobre a face do
+   modulo (o par `faint/panel2` ja' esta' na auditoria, 5,14:1) e o numeral no
+   `--dim`, o registro mais claro da mesma face. */
+.pkg .dlcount{font-family:var(--mono);font-size:12px;color:var(--faint);margin:8px 0 0}
+.pkg .dlcount[hidden]{display:none}
+.pkg .dlcount b{color:var(--dim);font-weight:700}
+.warn{border:1px solid var(--line);border-left:3px solid var(--led);background:rgba(255,42,24,.05);
+  border-radius:var(--r2);padding:14px 16px;color:var(--dim);font-size:13.5px;margin-top:18px}
+.warn b{color:var(--text)}
+
+/* ---------------------------------------------------------------- footer --*/
+footer{border-top:1px solid var(--line);padding:36px 0 96px;color:var(--faint);font-size:13px}
+footer .fr{display:flex;gap:20px;flex-wrap:wrap;align-items:center;justify-content:space-between}
+footer .mono{font-size:11.5px;letter-spacing:.1em;text-transform:uppercase}
+
+/* --------------------------------------------------------------- lightbox --*/
+.lb{position:fixed;inset:0;z-index:100;background:rgba(18,12,8,.95);display:none;align-items:center;
+  justify-content:center;padding:26px}
+.lb.on{display:flex}
+.lb img{max-width:min(96vw,480px);max-height:88vh;border-radius:var(--r2);border:1px solid var(--line2)}
+.lb button{position:absolute;top:18px;right:20px;background:var(--panel2);border:1px solid var(--line2);
+  color:var(--text);border-radius:8px;padding:10px 14px;font-family:var(--mono);cursor:pointer}
+
+/* -------------------------------------------------------------- responsivo */
+@media (max-width:980px){
+  .hero{grid-template-columns:1fr;gap:36px;padding:48px 0 44px}
+  .hero .device{max-width:420px;margin:0 auto}
+  .plate>.wrap{grid-template-columns:1fr;gap:18px}
+  .rail{position:static;border-left:0;padding-left:0;margin:0}
+  .hl{grid-template-columns:1fr;gap:30px}
+  .hl .device{order:0}
+  .rack,.rack.n3{grid-template-columns:1fr 1fr}
+  .themes{grid-template-columns:1fr 1fr}
+  .dl,.rowlist{grid-template-columns:1fr}
+}
+@media (max-width:660px){
+  nav{display:none}
+  nav.open{display:flex;position:absolute;top:64px;left:0;right:0;background:var(--ink2);
+    border-bottom:1px solid var(--line);flex-direction:column;padding:16px 24px;align-items:flex-start}
+  .burger{display:inline-block;margin-left:auto}
+  .rack,.rack.n3,.themes{grid-template-columns:1fr}
+  .spec{grid-template-columns:1fr 1fr}
+  .spec div:nth-child(3n){border-right:1px solid var(--line)}
+  .spec div:nth-child(2n){border-right:0}
+  .spec div:nth-child(-n+3){border-bottom:0}
+  .spec div:nth-child(-n+4){border-bottom:1px solid var(--line)}
+  .duo{grid-template-columns:1fr}
+  .strip .shot{flex:0 0 78%}
+  .device>div,.device>figure,.device.stack .duo{max-width:100%}
+  th{width:auto}
+  table,thead,tbody,tr,th,td{display:block}
+  th{border-bottom:0;padding-bottom:2px}
+  td{padding-top:0}
+  .lang{margin-left:8px}
+}
+/* abaixo de 380px nao ha largura para a assinatura ao lado da marca: o nome fica,
+   o "by chapa" sai — melhor perder a assinatura do que estourar o cabecalho. */
+@media (max-width:380px){.by{display:none}}
+@media (prefers-reduced-motion:reduce){
+  html{scroll-behavior:auto}
+  *,*:before,*:after{transition:none!important;animation:none!important}
+  .zoom:hover .bezel{transform:none}
+  .btn:hover{transform:none}
+}
+</style>
+</head>
+<body>
+
+<a class="skip" href="#main" data-pt="Pular para o conteúdo" data-en="Skip to content">Pular para o conteúdo</a>
+
+<header>
+  <div class="wrap bar">
+    <div class="brand"><div class="logo">BAP</div><span class="by">by chapa</span></div>
+    <button class="burger" id="burger" aria-label="menu" aria-expanded="false">☰</button>
+    <nav id="nav">
+      <a href="#recursos" data-pt="Recursos" data-en="Features">Recursos</a>
+      <a href="#telas" data-pt="Telas" data-en="Screens">Telas</a>
+      <a href="#captura" data-pt="Captura" data-en="Sampling">Captura</a>
+      <a href="#audio" data-pt="Áudio" data-en="Audio">Áudio</a>
+      <a href="#temas" data-pt="Temas" data-en="Themes">Temas</a>
+      <a href="#specs" data-pt="Especificações" data-en="Specs">Especificações</a>
+      <a href="#download" data-pt="Download" data-en="Download">Download</a>
+    </nav>
+    <div class="lang" role="group" aria-label="idioma / language">
+      <button id="pt" aria-pressed="true">PT</button>
+      <button id="en" aria-pressed="false">EN</button>
+    </div>
+  </div>
+</header>
+
+<main id="main">
+
+  <!-- ================================================================ HERO -->
+<div class="wrap">
+  <div class="hero">
+    <div>
+      <p class="ver">
+        <span data-pt="v1.0.0" data-en="v1.0.0">v1.0.0</span><i></i>
+        <span data-pt="Windows 10/11 · Linux" data-en="Windows 10/11 · Linux">Windows 10/11 · Linux</span><i></i>
+        <span class="free" data-pt="Grátis" data-en="Free">Grátis</span>
+      </p>
+      <h1 data-pt="Um sampler completo e <em>leve</em>." data-en="A complete, <em>lightweight</em> sampler.">Um sampler completo e <em>leve</em>.</h1>
+      <p class="lead" data-pt="Sampler de 64 pads com fatiamento no CHOP LAB, 23 módulos internos e captura do áudio que está tocando no seu computador. <b>Um binário, uma pasta</b> — sem instalador, sem registro e sem checagem de licença pela internet, com o projeto salvo em <b>.plp</b> + material."
+         data-en="A 64-pad sampler with CHOP LAB slicing, 23 built-in modules and capture of whatever is playing on your computer. <b>One binary, one folder</b> — no installer, no registration and no online license check, with the project saved as <b>.plp</b> + media.">Sampler de 64 pads com fatiamento no CHOP LAB, 23 módulos internos e captura do áudio que está tocando no seu computador. <b>Um binário, uma pasta</b> — sem instalador, sem registro e sem checagem de licença pela internet, com o projeto salvo em <b>.plp</b> + material.</p>
+
+      <div class="spec">
+        <div><b>64</b><span data-pt="pads · 4 bancos" data-en="pads · 4 banks">pads · 4 bancos</span></div>
+        <div><b>23</b><span data-pt="módulos internos" data-en="built-in modules">módulos internos</span></div>
+        <div><b>24</b><span data-pt="vozes" data-en="voices">vozes</span></div>
+        <div><b>10</b><span data-pt="slots de rack por strip" data-en="rack slots per strip">slots de rack por strip</span></div>
+        <div><b>25–400%</b><span data-pt="LEN · WSOLA" data-en="LEN · WSOLA">LEN · WSOLA</span></div>
+        <div><b>192 kHz</b><span data-pt="taxa máxima" data-en="maximum rate">taxa máxima</span></div>
+      </div>
+      <div class="cta">
+        <a class="btn primary" href="#download" data-pt="Baixar o Bap" data-en="Download Bap">Baixar o Bap</a>
+        <a class="btn" href="#recursos" data-pt="Ver os recursos" data-en="See the features">Ver os recursos</a>
+        <a class="btn ghost" href="#audio" data-pt="Ouvir o A/B ↓" data-en="Hear the A/B ↓">Ouvir o A/B ↓</a>
+      </div>
+    </div>
+    <div class="device">
+      <figure class="shot">
+        <button class="zoom" type="button" aria-label="WAVE · EDIT">
+          <div class="bezel">
+            <img src="img/wave-signal.png" width="480" height="1000" alt="Tela WAVE do Bap com onda, cursores de corte e as edições destrutivas">
+            <span class="tag mono">WAVE · EDIT</span>
+          </div>
+        </button>
+      </figure>
+    </div>
+  </div>
+  </div>
+
+  <!-- ============================================================ RECURSOS -->
+  <section id="recursos" class="plate">
+    <div class="wrap">
+      <p class="k rail" data-pt="O que está dentro" data-en="What is inside">O que está dentro</p>
+      <div>
+    <h2 data-pt="Tudo o que você precisa para virar uma ideia em loop — na mesma tela." data-en="Everything you need to turn an idea into a loop — on the same screen.">Tudo o que você precisa para virar uma ideia em loop — na mesma tela.</h2>
+    <p class="sub" data-pt="Cada recurso abaixo existe no binário que você baixa hoje. Nada aqui é promessa de roadmap."
+       data-en="Every feature below exists in the binary you download today. Nothing here is a roadmap promise.">Cada recurso abaixo existe no binário que você baixa hoje. Nada aqui é promessa de roadmap.</p>
+
+    <div class="rowlist">
+      <div class="row">
+        <span class="ser">SAMPLER</span>
+        <h3 data-pt="64 pads · 16 por banco, 4 bancos" data-en="64 pads · 16 per bank, 4 banks">64 pads · 16 por banco, 4 bancos</h3>
+        <p data-pt="A grade A/B/C/D endereça 64 pads globais (01–64). Pad 01 no canto inferior esquerdo, como manda a tradição."
+           data-en="The A/B/C/D grid addresses 64 global pads (01–64). Pad 01 at the bottom-left corner, as tradition demands.">A grade A/B/C/D endereça 64 pads globais (01–64). Pad 01 no canto inferior esquerdo, como manda a tradição.</p>
+      </div>
+      <div class="row">
+        <span class="ser">ENVELOPE</span>
+        <h3 data-pt="AHDSR completo, por pad" data-en="Full AHDSR, per pad">AHDSR completo, por pad</h3>
+        <ul data-pt="<li>Attack 0–2000 ms, Hold 0–5000 ms (INF), Decay 0–2000 ms</li><li>Sustain 0–100%, Release 1–5000 ms</li><li>Painel AHR rápido na SESSION e editor completo na WAVE</li>"
+            data-en="<li>Attack 0–2000 ms, Hold 0–5000 ms (INF), Decay 0–2000 ms</li><li>Sustain 0–100%, Release 1–5000 ms</li><li>Fast AHR panel on SESSION and the full editor on WAVE</li>"><li>Attack 0–2000 ms, Hold 0–5000 ms (INF), Decay 0–2000 ms</li><li>Sustain 0–100%, Release 1–5000 ms</li><li>Painel AHR rápido na SESSION e editor completo na WAVE</li></ul>
+      </div>
+      <div class="row">
+        <span class="ser">LEN</span>
+        <h3 data-pt="Estica sem desafinar (25–400%)" data-en="Stretch without detuning (25–400%)">Estica sem desafinar (25–400%)</h3>
+        <p data-pt="LEN por WSOLA: encaixa a fatia no compasso sem mexer no tom. O PITCH é outro eixo, ±24 semitons, e mover um não move o outro."
+           data-en="LEN by WSOLA: fits the slice to the bar without touching pitch. PITCH is a separate axis, ±24 semitones, and moving one does not move the other.">LEN por WSOLA: encaixa a fatia no compasso sem mexer no tom. O PITCH é outro eixo, ±24 semitons, e mover um não move o outro.</p>
+      </div>
+      <div class="row">
+        <span class="ser">DISPARO</span>
+        <h3 data-pt="SHOT, GATE, 16 grupos de CHOKE" data-en="SHOT, GATE, 16 CHOKE groups">SHOT, GATE, 16 grupos de CHOKE</h3>
+        <ul data-pt="<li>SHOT toca até o fim; GATE toca enquanto você segura</li><li>16 grupos de abafamento (o bumbo corta o bumbo)</li><li>POLY ou MONO por pad, com 24 vozes no motor</li>"
+            data-en="<li>SHOT plays to the end; GATE plays while held</li><li>16 choke groups (kick cuts kick)</li><li>POLY or MONO per pad, with 24 voices in the engine</li>"><li>SHOT toca até o fim; GATE toca enquanto você segura</li><li>16 grupos de abafamento (o bumbo corta o bumbo)</li><li>POLY ou MONO por pad, com 24 vozes no motor</li></ul>
+      </div>
+      <div class="row">
+        <span class="ser">LOOP + FILTRO</span>
+        <h3 data-pt="Loop de sustentação e filtro por pad" data-en="Sustain loop and per-pad filter">Loop de sustentação e filtro por pad</h3>
+        <p data-pt="Janela de loop com crossfade de 1 a 50 ms para o pad respirar infinito sem clique, e filtro passa-baixa/passa-alta com ressonância em cada pad."
+           data-en="A loop window with 1–50 ms crossfade so a pad can breathe forever without clicking, plus a resonant low/high-pass filter on every pad.">Janela de loop com crossfade de 1 a 50 ms para o pad respirar infinito sem clique, e filtro passa-baixa/passa-alta com ressonância em cada pad.</p>
+      </div>
+      <div class="row">
+        <span class="ser">TIMING</span>
+        <h3 data-pt="Swing e humanize por pad" data-en="Swing and humanize per pad">Swing e humanize por pad</h3>
+        <p data-pt="Ajuste fino de grade global e, por pad, o quanto o disparo atrasa ou adianta — o groove sai do pad, não de um preset."
+           data-en="Global grid feel plus, per pad, how much the trigger lags or leads — groove comes from the pad, not from a preset.">Ajuste fino de grade global e, por pad, o quanto o disparo atrasa ou adianta — o groove sai do pad, não de um preset.</p>
+      </div>
+    </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================================================== CHOP LAB / EDIÇÃO ==-->
+  <section id="chop" class="sect">
+    <div class="wrap hl">
+      <div>
+        <p class="k" data-pt="CHOP LAB &amp; EDIT" data-en="CHOP LAB &amp; EDIT">CHOP LAB &amp; EDIT</p>
+        <h2 data-pt="Corte no zero, grude no transiente, fatia que já cai no pad." data-en="Cut at zero, snap to transient, slices that land on pads.">Corte no zero, grude no transiente, fatia que já cai no pad.</h2>
+        <ul class="ticks">
+          <li data-pt="<b>Z SNAP</b> emenda o corte no cruzamento de zero; <b>TRANS</b> gruda no ataque — o corte que acerta o ritmo."
+              data-en="<b>Z SNAP</b> stitches the cut at a zero crossing; <b>TRANS</b> snaps to the attack — the cut that hits the beat."><b>Z SNAP</b> emenda o corte no cruzamento de zero; <b>TRANS</b> gruda no ataque — o corte que acerta o ritmo.</li>
+          <li data-pt="<b>FADE IN, FADE OUT, REV, MONO, CROP, CUT, NORM e EXTRACT</b> — edições destrutivas com desfazer próprio da WAVE."
+              data-en="<b>FADE IN, FADE OUT, REV, MONO, CROP, CUT, NORM and EXTRACT</b> — destructive edits with their own WAVE undo."><b>FADE IN, FADE OUT, REV, MONO, CROP, CUT, NORM e EXTRACT</b> — edições destrutivas com desfazer próprio da WAVE.</li>
+          <li data-pt="<b>CHOP LAB</b> com pré-escuta do corte, renomear, limpar e mover fatias sobre a grade."
+              data-en="<b>CHOP LAB</b> with slice pre-listening, rename, clear and move slices over the grid."><b>CHOP LAB</b> com pré-escuta do corte, renomear, limpar e mover fatias sobre a grade.</li>
+          <li data-pt="<b>EXPORTAR LOTE A→B→C→D</b>: as fatias descem para os pads do banco de destino e transbordam para o próximo. Se o lote não cabe, ele é recusado inteiro — nunca metade."
+              data-en="<b>BATCH EXPORT A→B→C→D</b>: slices land on the destination bank pads and spill into the next bank. If the batch does not fit, it is refused as a whole — never a half job."><b>EXPORTAR LOTE A→B→C→D</b>: as fatias descem para os pads do banco de destino e transbordam para o próximo. Se o lote não cabe, ele é recusado inteiro — nunca metade.</li>
+        </ul>
+      </div>
+      <div class="device">
+        <figure class="shot">
+          <button class="zoom" type="button" aria-label="CHOP LAB">
+            <div class="bezel"><img loading="lazy" src="img/choplab.png" width="481" height="1002" alt="CHOP LAB do Bap: a onda fatiada com os marcadores e os controles do corte"><span class="tag mono">CHOP LAB</span></div>
+          </button>
+        </figure>
+      </div>
+    </div>
+  </section>
+
+  <!-- =============================================================== TELAS -->
+  <section id="telas" class="zone">
+    <div class="wrap">
+      <p class="k" data-pt="As telas" data-en="The screens">As telas</p>
+    <h2 data-pt="Cinco telas, zero menu escondido." data-en="Five screens, zero hidden menus.">Cinco telas, zero menu escondido.</h2>
+    <p class="sub" data-pt="Renders do próprio app e capturas da janela real, na proporção do projeto (480 × 954). A quinta tela é a SAMPLE, o crate digging — ela aparece onde há captura de sistema, ou seja, no Windows. Clique para ampliar."
+       data-en="Renders from the app itself and captures of the real window, at project ratio (480 × 954). The fifth screen is SAMPLE, the crate digging — it appears where system capture exists, that is, on Windows. Click to zoom.">Renders do próprio app e capturas da janela real, na proporção do projeto (480 × 954). A quinta tela é a SAMPLE, o crate digging — ela aparece onde há captura de sistema, ou seja, no Windows. Clique para ampliar.</p>
+    </div>
+    <div class="strip">
+      <figure class="shot"><button class="zoom" type="button" aria-label="MIX / FX"><div class="bezel"><img loading="lazy" src="img/mix-fx-live.png" width="482" height="1004" alt="MIX/FX com strips, racks, faders e medidores"></div></button>
+        <figcaption>MIX / FX<span data-pt="19 strips (16 canais + MASTER + SEND A/B), 10 slots de rack por strip." data-en="19 strips (16 channels + MASTER + SEND A/B), 10 rack slots per strip.">19 strips (16 canais + MASTER + SEND A/B), 10 slots de rack por strip.</span></figcaption></figure>
+      <figure class="shot"><button class="zoom" type="button" aria-label="DIRTY"><div class="bezel"><img loading="lazy" src="img/dirty-rack.png" width="480" height="954" alt="DIRTY com rack de 6 blocos e waveform"></div></button>
+        <figcaption>DIRTY<span data-pt="Cadeia de 6 blocos, TRIM, TAXA e o bake para pad ou arquivo." data-en="6-slot chain, TRIM, RATE and the bake to pad or file.">Cadeia de 6 blocos, TRIM, TAXA e o bake para pad ou arquivo.</span></figcaption></figure>
+      <figure class="shot"><button class="zoom" type="button" aria-label="SESSION"><div class="bezel"><img loading="lazy" src="img/session-full.png" width="482" height="1001" alt="SESSION do Bap com a grade cheia"></div></button>
+        <figcaption>SESSION<span data-pt="A grade cheia: timeline, pads e os bancos A/B/C/D na mesma tela." data-en="Grid crowded: timeline, pads and the A/B/C/D banks on the same screen.">A grade cheia: timeline, pads e os bancos A/B/C/D na mesma tela.</span></figcaption></figure>
+      <figure class="shot"><button class="zoom" type="button" aria-label="LEN"><div class="bezel"><img loading="lazy" src="img/timewarp.png" width="481" height="1002" alt="A régua do comprimento (LEN) sobre a tela"></div></button>
+        <figcaption>LEN<span data-pt="A régua do comprimento: a borda direita da onda é o cursor — arraste e solte para assar o novo comprimento. A faixa vai de 25% a 400% e o visor lê a posição na grade (1.2.1 = compasso 1, tempo 2, 16º 1)." data-en="The length ruler: the waveform's right edge is the cursor — drag and release to bake the new length. The range runs from 25% to 400% and the readout speaks the grid (1.2.1 = bar 1, beat 2, 16th 1).">A régua do comprimento: a borda direita da onda é o cursor — arraste e solte para assar o novo comprimento. A faixa vai de 25% a 400% e o visor lê a posição na grade (1.2.1 = compasso 1, tempo 2, 16º 1).</span></figcaption></figure>
+      <figure class="shot"><button class="zoom" type="button" aria-label="MIDI · MAPA"><div class="bezel"><img loading="lazy" src="img/midi-map.png" width="481" height="1000" alt="O mapa MIDI aprendido na tela"></div></button>
+        <figcaption>MIDI · MAPA<span data-pt="O mapa que o Bap aprendeu: cada controle do seu hardware ligado a um alvo da tela, salvo por projeto." data-en="The map Bap learned: each hardware control bound to a screen target, saved per project.">O mapa que o Bap aprendeu: cada controle do seu hardware ligado a um alvo da tela, salvo por projeto.</span></figcaption></figure>
+      <figure class="shot"><button class="zoom" type="button" aria-label="EXPORTAR"><div class="bezel"><img loading="lazy" src="img/export.png" width="480" height="1001" alt="A janela de exportação"></div></button>
+        <figcaption>EXPORTAR<span data-pt="A janela de exportação: o que sai do master ou do canal, em WAV." data-en="The export window: what leaves the master or the channel, as WAV.">A janela de exportação: o que sai do master ou do canal, em WAV.</span></figcaption></figure>
+      <figure class="shot"><button class="zoom" type="button" aria-label="OPTIONS"><div class="bezel"><img loading="lazy" src="img/options-live.png" width="482" height="1000" alt="OPTIONS aberta sobre a tela"></div></button>
+        <figcaption>OPTIONS<span data-pt="Driver, placa, taxa, buffer, MIDI IN e o idioma (PT / EN)." data-en="Driver, device, rate, buffer, MIDI IN and language (PT / EN).">Driver, placa, taxa, buffer, MIDI IN e o idioma (PT / EN).</span></figcaption></figure>
+    </div>
+      <p class="striphint" data-pt="7 imagens do app · arraste para o lado" data-en="7 app images · drag sideways">7 imagens do app · arraste para o lado</p>
+  </section>
+
+  <!-- ============================================================= CAPTURA -->
+  <section id="captura" class="sect">
+    <div class="wrap hl">
+      <div>
+        <p class="k" data-pt="Crate digging" data-en="Crate digging">Crate digging</p>
+        <h2 data-pt="O sample está tocando no seu computador? Puxe para dentro do Bap." data-en="The sample is playing on your computer? Pull it into Bap.">O sample está tocando no seu computador? Puxe para dentro do Bap.</h2>
+        <p class="sub" data-pt="A captura de áudio do sistema grava em estéreo o que está saindo da máquina — browser, player, qualquer coisa. O anel guarda o passado, então o take começa antes de você apertar REC."
+           data-en="System audio capture records in stereo whatever leaves the machine — browser, player, anything. The ring holds the past, so the take starts before you hit REC.">A captura de áudio do sistema grava em estéreo o que está saindo da máquina — browser, player, qualquer coisa. O anel guarda o passado, então o take começa antes de você apertar REC.</p>
+        <ul class="ticks">
+          <li data-pt="<b>Pré-roll de 1 s</b> (ajustável até 10 s) e <b>anel de 60 s</b> do que já passou."
+              data-en="<b>1 s pre-roll</b> (adjustable up to 10 s) and a <b>60 s ring</b> of what has already played."><b>Pré-roll de 1 s</b> (ajustável até 10 s) e <b>anel de 60 s</b> do que já passou.</li>
+          <li data-pt="<b>Onda viva de 4 segundos</b> rolando na tela, com as marcas do REC e do início do take."
+              data-en="<b>4-second live rolling waveform</b>, with the REC and take-start marks."><b>Onda viva de 4 segundos</b> rolando na tela, com as marcas do REC e do início do take.</li>
+          <li data-pt="<b>Medidores L/R independentes</b> com pico e clip — dá para ver o canal que satura antes de cortar."
+              data-en="<b>Independent L/R meters</b> with peak and clip — you see the channel clipping before you cut."><b>Medidores L/R independentes</b> com pico e clip — dá para ver o canal que satura antes de cortar.</li>
+          <li data-pt="<b>Destino direto em pad e banco</b>: banco A–D, grade 4×4 e dois cursores definem o que vira pad — com prévia do corte antes de publicar."
+              data-en="<b>Straight to pad and bank</b>: bank A–D, 4×4 grid and two handles define what becomes a pad — with a preview of the cut before publishing."><b>Destino direto em pad e banco</b>: banco A–D, grade 4×4 e dois cursores definem o que vira pad — com prévia do corte antes de publicar.</li>
+        </ul>
+        <div class="warn" data-pt="<b>Requisito de plataforma:</b> a captura do áudio do sistema usa o loopback do Windows (WASAPI). No Windows 10/11 64-bit está disponível; no Linux, o Bap roda com ALSA e JACK, mas a captura do sistema não é oferecida."
+            data-en="<b>Platform requirement:</b> system audio capture uses the Windows loopback (WASAPI). On Windows 10/11 64-bit it is available; on Linux, Bap runs with ALSA and JACK, but system capture is not offered."><b>Requisito de plataforma:</b> a captura do áudio do sistema usa o loopback do Windows (WASAPI). No Windows 10/11 64-bit está disponível; no Linux, o Bap roda com ALSA e JACK, mas a captura do sistema não é oferecida.</div>
+      </div>
+      <div class="device stack">
+        <figure class="shot">
+          <button class="zoom" type="button" aria-label="SAMPLE · REC">
+            <div class="bezel"><img loading="lazy" src="img/sample-rec.png" width="479" height="999" alt="Aba SAMPLE do Bap gravando: a onda viva do take"><span class="tag mono">SAMPLE · REC</span></div>
+          </button>
+        </figure>
+        <div class="duo">
+          <figure class="shot"><button class="zoom" type="button" aria-label="ANTES DO REC"><div class="bezel"><img loading="lazy" src="img/sample-armed.png" width="481" height="1001" alt="Aba SAMPLE armada, antes do REC"></div></button>
+            <figcaption>ANTES DO REC<span data-pt="A aba armada: pré-roll, anel de 60 s e o destino no pad." data-en="The tab armed: pre-roll, 60 s ring and the pad destination.">A aba armada: pré-roll, anel de 60 s e o destino no pad.</span></figcaption></figure>
+          <figure class="shot"><button class="zoom" type="button" aria-label="DESTINO DO TAKE"><div class="bezel"><img loading="lazy" src="img/sample-popout.png" width="482" height="1002" alt="O modal de destino depois do REC: banco A–D, grade 4×4 e os dois cursores do corte"></div></button>
+            <figcaption>DESTINO DO TAKE<span data-pt="O modal de destino aberto: banco A–D em cima, a grade 4×4 embaixo, os dois cursores do corte sobre a onda e o grude ZERO/TRANS — ZERO emenda no cruzamento de zero, TRANS gruda no transiente." data-en="The destination modal open: bank A–D on top, the 4×4 grid below, the two trim handles over the waveform and the ZERO/TRANS glue — ZERO splices at a zero crossing, TRANS locks onto the transient.">O modal de destino aberto: banco A–D em cima, a grade 4×4 embaixo, os dois cursores do corte sobre a onda e o grude ZERO/TRANS — ZERO emenda no cruzamento de zero, TRANS gruda no transiente.</span></figcaption></figure>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================== MIX/FX -->
+  <section id="fx" class="zone">
+    <div class="wrap">
+      <p class="k" data-pt="Mesa e efeitos" data-en="Mixer and effects">Mesa e efeitos</p>
+    <h2 data-pt="23 módulos internos e o console inteiro num rack de 10 slots." data-en="23 built-in modules and the whole console in a 10-slot rack.">23 módulos internos e o console inteiro num rack de 10 slots.</h2>
+    <p class="sub" data-pt="16 canais de sampler, MASTER e dois retornos, cada um com 10 slots. Fora os módulos próprios, o rack hospeda VST3."
+       data-en="16 sampler channels, MASTER and two returns, each with 10 slots. Besides the native modules, the rack hosts VST3.">16 canais de sampler, MASTER e dois retornos, cada um com 10 slots. Fora os módulos próprios, o rack hospeda VST3.</p>
+    <div class="rack">
+      <div class="module"><span class="ser">BUS</span><h3>GLUE COMP</h3>
+        <p data-pt="Compressão de bus no molde VCA do console: detector RMS estéreo-ligado, joelho duro, HPF no sidechain (OFF/60/90/120 Hz), RELEASE AUTO que respira com o programa, MAKEUP manual e MIX. Cor de transformador assimétrica no caminho de entrada."
+           data-en="VCA-style bus compression: stereo-linked RMS detector, hard knee, sidechain HPF (OFF/60/90/120 Hz), an AUTO RELEASE that breathes with the program, manual MAKEUP and MIX. Asymmetric transformer color on the input path.">Compressão de bus no molde VCA do console: detector RMS estéreo-ligado, joelho duro, HPF no sidechain (OFF/60/90/120 Hz), RELEASE AUTO que respira com o programa, MAKEUP manual e MIX. Cor de transformador assimétrica no caminho de entrada.</p></div>
+      <div class="module"><span class="ser">MASTER</span><h3>LIMITER</h3>
+        <p data-pt="Trava de pico e maximizador no master: CEILING, RELEASE e THRESHOLD. O ataque é 0 ms por projeto — é o que segura o pico antes de virar clipping."
+           data-en="Peak trap and maximizer on the master: CEILING, RELEASE and THRESHOLD. Attack is 0 ms by design — that is what catches the peak before it becomes clipping.">Trava de pico e maximizador no master: CEILING, RELEASE e THRESHOLD. O ataque é 0 ms por projeto — é o que segura o pico antes de virar clipping.</p></div>
+      <div class="module"><span class="ser">VINTAGE</span><h3 data-pt="SP-303 / SP-404 / SP-1200 / MPC" data-en="SP-303 / SP-404 / SP-1200 / MPC">SP-303 / SP-404 / SP-1200 / MPC</h3>
+        <p data-pt="Cadeias fixas de equipamentos clássicos: dois compressores de sampler com um só controle (DOSAGE) e quatro samplers com painel de arte — a curadoria é o próprio som."
+           data-en="Fixed chains of classic gear: two sampler compressors with a single control (DOSAGE) and four samplers with an art panel — the curation is the sound itself.">Cadeias fixas de equipamentos clássicos: dois compressores de sampler com um só controle (DOSAGE) e quatro samplers com painel de arte — a curadoria é o próprio som.</p></div>
+      <div class="module"><span class="ser">LO-FI</span><h3 data-pt="Crush, vinil e fita" data-en="Crush, vinyl and tape">Crush, vinil e fita</h3>
+        <p data-pt="BITCRUSH de 1 a 16 bits com lei LINEAR ou µ-LAW 255, VINYL SIM com crackle/wow/saturação/age/drift, DRIVE com tone, e TAPE DECK com tipo de fita, desgaste e chiado."
+           data-en="BITCRUSH from 1 to 16 bits with LINEAR or µ-LAW 255 law, VINYL SIM with crackle/wow/saturation/age/drift, DRIVE with tone, and TAPE DECK with tape type, wear and hiss.">BITCRUSH de 1 a 16 bits com lei LINEAR ou µ-LAW 255, VINYL SIM com crackle/wow/saturação/age/drift, DRIVE com tone, e TAPE DECK com tipo de fita, desgaste e chiado.</p></div>
+      <div class="module"><span class="ser">REESCRITA</span><h3>DIRTY ENGINE</h3>
+        <p data-pt="Pegue o material, aplique TRIM, uma cadeia de 6 blocos, RATE (pitch livre ou BPM MATCH) e uma conversão de taxa por sinc polyphase — e devolva um sample NOVO no pad ou um arquivo WAV."
+           data-en="Take the material, apply TRIM, a 6-slot chain, RATE (free pitch or BPM MATCH) and a polyphase sinc sample-rate conversion — and get a NEW sample on the pad or a WAV file.">Pegue o material, aplique TRIM, uma cadeia de 6 blocos, RATE (pitch livre ou BPM MATCH) e uma conversão de taxa por sinc polyphase — e devolva um sample NOVO no pad ou um arquivo WAV.</p></div>
+      <div class="module"><span class="ser">DINÂMICA</span><h3>COMPRESSOR &amp; SIDECHAIN</h3>
+        <p data-pt="Compressor completo (THRESH, RATIO, ATTACK, RELEASE, MAKEUP, KNEE) e Sidechain Receiver: abaixe um canal usando o envelope de outro como chave — o ducking clássico, dentro da mesa."
+           data-en="Full compressor (THRESH, RATIO, ATTACK, RELEASE, MAKEUP, KNEE) and Sidechain Receiver: duck a channel using another channel's envelope as the key — classic ducking, inside the desk.">Compressor completo (THRESH, RATIO, ATTACK, RELEASE, MAKEUP, KNEE) e Sidechain Receiver: abaixe um canal usando o envelope de outro como chave — o ducking clássico, dentro da mesa.</p></div>
+      <div class="module"><span class="ser">TEMPO</span><h3>DELAY, REVERB, CHORUS, PHASER</h3>
+        <p data-pt="Delay sincronizado com divisões de tempo, reverb com 4 algoritmos, chorus e phaser/flanger com modo e estágios — todos com SYNC à grade."
+           data-en="Delay synced to note divisions, reverb with 4 algorithms, chorus and phaser/flanger with mode and stages — all with grid SYNC.">Delay sincronizado com divisões de tempo, reverb com 4 algoritmos, chorus e phaser/flanger com modo e estágios — todos com SYNC à grade.</p></div>
+      <div class="module"><span class="ser">FILTRO</span><h3>AUTO FILTER &amp; EQ</h3>
+        <p data-pt="Função de filtro com LFO em quatro caracteres (LOW PASS, HIGH PASS, WAH e TALKBOX com formantes de vogais) e EQ paramétrico de 3 bandas com curva desenhada em tempo real."
+           data-en="A filter function with an LFO in four characters (LOW PASS, HIGH PASS, WAH and TALKBOX with vowel formants) plus a 3-band parametric EQ with a curve drawn in real time.">Função de filtro com LFO em quatro caracteres (LOW PASS, HIGH PASS, WAH e TALKBOX com formantes de vogais) e EQ paramétrico de 3 bandas com curva desenhada em tempo real.</p></div>
+    </div>
+    <figure class="shot" style="max-width:420px;margin-top:26px"><button class="zoom" type="button" aria-label="RACK DO CANAL · 10 SLOTS"><div class="bezel"><img loading="lazy" src="img/rack-glue-vinyl.png" width="633" height="640" alt="O modal do canal com 10 slots, GLUE COMP e VINYL SIM abertos"></div></button>
+      <figcaption>RACK DO CANAL · 10 SLOTS<span data-pt="Dois dos 10 slots do rack abertos — aqui num MASTER: GLUE COMP (THRESH, RATIO, ATTACK, RELEASE, MAKEUP e o medidor de redução de ganho) e VINYL SIM (crackle, wow, sat, age). O módulo entra pelo NOME do equipamento e traz os controles dele." data-en="Two of the rack's 10 slots, opened — here on a MASTER: GLUE COMP (THRESH, RATIO, ATTACK, RELEASE, MAKEUP and the gain-reduction meter) and VINYL SIM (crackle, wow, sat, age). A module comes in as a gear NAME and brings its own controls.">Dois dos 10 slots do rack abertos — aqui num MASTER: GLUE COMP (THRESH, RATIO, ATTACK, RELEASE, MAKEUP e o medidor de redução de ganho) e VINYL SIM (crackle, wow, sat, age). O módulo entra pelo NOME do equipamento e traz os controles dele.</span></figcaption></figure>
+    </div>
+  </section>
+
+  <!-- =============================================================== AUDIO -->
+  <section id="audio" class="sect">
+    <div class="wrap hl">
+      <div>
+        <p class="k" data-pt="Ouça o motor" data-en="Hear the engine">Ouça o motor</p>
+        <h2 data-pt="O mesmo break: seco de um lado, cadeia do outro." data-en="The same break: dry on one side, chain on the other.">O mesmo break: seco de um lado, cadeia do outro.</h2>
+        <p class="sub" data-pt="Um break de bateria entrou no Bap e saiu em dois arquivos: o material de origem, seco, e o mesmo material depois da cadeia — TAPE DECK (a fita: drive, wow e chiado), SP-303 COMP (o compressor VCA do sampler) e MPC 3000 (cadeia travada, sem um controle para girar). A troca mantém o ponto de escuta: aperte B no meio do break e volte para A sem perder o lugar."
+           data-en="A drum break went into Bap and came out as two files: the source material, dry, and the same material after the chain — TAPE DECK (the tape: drive, wow and hiss), SP-303 COMP (the sampler's VCA compressor) and MPC 3000 (locked chain, not a single control to turn). The switch keeps the listening point: hit B in the middle of the break and come back to A without losing your place.">Um break de bateria entrou no Bap e saiu em dois arquivos: o material de origem, seco, e o mesmo material depois da cadeia — TAPE DECK (a fita: drive, wow e chiado), SP-303 COMP (o compressor VCA do sampler) e MPC 3000 (cadeia travada, sem um controle para girar). A troca mantém o ponto de escuta: aperte B no meio do break e volte para A sem perder o lugar.</p>
+        <p class="note" data-pt="Mesma origem e mesmo trecho: a única diferença entre os dois é a cadeia. Medido nos arquivos, o lado com a cadeia fica 3,4 dB mais alto em média (RMS) com o mesmo pico — é a compressão trabalhando, não volume escondido."
+           data-en="Same source and same passage: the only difference between them is the chain. Measured on the files, the processed side sits 3.4 dB higher on average (RMS) at the same peak — that is the compression at work, not a hidden volume bump.">Mesma origem e mesmo trecho: a única diferença entre os dois é a cadeia. Medido nos arquivos, o lado com a cadeia fica 3,4 dB mais alto em média (RMS) com o mesmo pico — é a compressão trabalhando, não volume escondido.</p>
+      </div>
+      <div class="device">
+        <div class="player">
+          <div class="head"><span data-pt="Break de bateria · A/B" data-en="Drum break · A/B">Break de bateria · A/B</span></div>
+          <div class="ab" role="group" aria-label="A / B">
+            <button class="btn" id="abdrybtn" aria-pressed="false" data-pt="A · sem efeito" data-en="A · no effect">A · sem efeito</button>
+            <button class="btn" id="abwetbtn" aria-pressed="false" data-pt="B · com efeito" data-en="B · with effect">B · com efeito</button>
+          </div>
+          <div class="bar" aria-hidden="true"><i id="abbar"></i></div>
+          <p class="clock" id="abtime">0:00 / 0:00</p>
+          <!-- O MP3 vem PRIMEIRO: o navegador toca a primeira fonte que ele
+               decodifica, e o WAV (4 MB por lado) so' baixaria inteiro. Os dois
+               lados foram codificados do mesmo jeito (192 kbps no mesmo
+               codificador), entao a comparacao A/B continua justa; o WAV fica
+               como reserva. -->
+          <audio id="abdry" preload="metadata" hidden>
+            <source src="audio/sem-efeito.mp3" type="audio/mpeg">
+            <source src="audio/sem-efeito.wav" type="audio/wav">
+          </audio>
+          <audio id="abwet" preload="metadata" hidden>
+            <source src="audio/com-efeito.mp3" type="audio/mpeg">
+            <source src="audio/com-efeito.wav" type="audio/wav">
+          </audio>
+          <p class="hint" data-pt="Aperte A para ouvir o seco e B para ouvir a cadeia: a troca leva o ponto de escuta junto. No mesmo botão, o segundo toque para. 10,5 s de break, 48 kHz, os dois da mesma origem."
+             data-en="Press A for the dry side and B for the chain: the switch carries the listening point along. On the same button, the second press stops. 10.5 s of break, 48 kHz, both from the same source.">Aperte A para ouvir o seco e B para ouvir a cadeia: a troca leva o ponto de escuta junto. No mesmo botão, o segundo toque para. 10,5 s de break, 48 kHz, os dois da mesma origem.</p>
+          <p class="hint" id="abdead" hidden data-pt="Os dois arquivos deste A/B não tocaram — confira a pasta audio/ (nome e formato)."
+             data-en="The two files of this A/B did not play — check the audio/ folder (name and format).">Os dois arquivos deste A/B não tocaram — confira a pasta audio/ (nome e formato).</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- =============================================================== TEMAS -->
+  <section id="temas" class="plate">
+    <div class="wrap">
+      <p class="k rail" data-pt="Aparência" data-en="Looks">Aparência</p>
+      <div>
+    <h2 data-pt="Cinco chassi de fábrica. E liberdade total para o seu." data-en="Five factory chassis. And complete freedom for yours.">Cinco chassi de fábrica. E liberdade total para o seu.</h2>
+    <p class="sub" data-pt="O tema muda de verdade: o desenho do knob, o bisel, a textura da lataria, o relevo do pad, o canto e a profundidade da sombra. O padrão de fábrica é o SP-303 VINYL GOLD."
+       data-en="A theme really changes things: knob style, bevel, chassis texture, pad relief, corner radius and shadow depth. The factory default is SP-303 VINYL GOLD.">O tema muda de verdade: o desenho do knob, o bisel, a textura da lataria, o relevo do pad, o canto e a profundidade da sombra. O padrão de fábrica é o SP-303 VINYL GOLD.</p>
+    <div class="themes">
+      <div class="theme"><img loading="lazy" src="img/session-full.png" width="482" height="1001" alt="Tema SP-303 VINYL GOLD"><div class="cap"><b>SP-303 VINYL GOLD</b><small data-pt="padrão · lataria vinil · 85%" data-en="default · vinyl chassis · 85%">padrão · lataria vinil · 85%</small></div></div>
+      <div class="theme"><img loading="lazy" src="img/theme-jjos1000.png" width="480" height="954" alt="Tema JJOS 1000"><div class="cap"><b>JJOS 1000</b><small data-pt="knob serrilhado · pad em relevo" data-en="serrated knob · raised pad">knob serrilhado · pad em relevo</small></div></div>
+      <div class="theme"><img loading="lazy" src="img/theme-mpc3000.png" width="480" height="954" alt="Tema MPC 3000 CLASSIC"><div class="cap"><b>MPC 3000 CLASSIC</b><small data-pt="knob escovado · lataria grão · canto 6px" data-en="brushed knob · grain chassis · 6px corner">knob escovado · lataria grão · canto 6px</small></div></div>
+      <div class="theme"><img loading="lazy" src="img/theme-sp1200.png" width="480" height="954" alt="Tema SP-1200 GOLD"><div class="cap"><b>SP-1200 GOLD</b><small data-pt="lataria escovada · sombra 3px" data-en="brushed chassis · 3px shadow">lataria escovada · sombra 3px</small></div></div>
+    </div>
+    <figure class="shot" style="max-width:460px;margin-top:26px"><button class="zoom" type="button" aria-label="EDIT UI · PALETA"><div class="bezel"><img loading="lazy" src="img/edit-ui.png" width="481" height="1002" alt="A paleta do Bap aberta: cada cor com o seu nome e o RESET DA PALETA"></div></button>
+      <figcaption>EDIT UI · PALETA<span data-pt="A paleta por dentro: cada cor com o nome dela (background, panel, line, lcd, neon…), o módulo, o canto, a sombra e a lataria — com RESET DA PALETA para voltar ao de fábrica." data-en="The palette from the inside: every colour with its name (background, panel, line, lcd, neon…), plus module, corner, shadow and chassis — with RESET DA PALETA to return to factory.">A paleta por dentro: cada cor com o nome dela (background, panel, line, lcd, neon…), o módulo, o canto, a sombra e a lataria — com RESET DA PALETA para voltar ao de fábrica.</span></figcaption></figure>
+    <div class="rack n3" style="margin-top:22px">
+      <div class="module"><h3 data-pt="Editor de interface" data-en="Interface editor">Editor de interface</h3>
+        <p data-pt="Regiões arrastáveis, regras de layout, paleta por tela, ícones de navegação e a lataria com controle de opacidade — salvo junto do seu esquema."
+           data-en="Draggable regions, layout rules, per-screen palette, navigation icons and the chassis with opacity control — saved with your scheme.">Regiões arrastáveis, regras de layout, paleta por tela, ícones de navegação e a lataria com controle de opacidade — salvo junto do seu esquema.</p></div>
+      <div class="module"><h3 data-pt="Português e inglês" data-en="Portuguese and English">Português e inglês</h3>
+        <p data-pt="A navegação troca de idioma na hora. O vocabulário de máquina — PAD, CHOKE, THRESH, CUTOFF — é o mesmo em qualquer língua, de propósito."
+           data-en="Navigation switches language on the fly. Machine vocabulary — PAD, CHOKE, THRESH, CUTOFF — stays the same in every language, on purpose.">A navegação troca de idioma na hora. O vocabulário de máquina — PAD, CHOKE, THRESH, CUTOFF — é o mesmo em qualquer língua, de propósito.</p></div>
+      <div class="module"><h3 data-pt="MIDI Learn e teclado" data-en="MIDI Learn and keyboard">MIDI Learn e teclado</h3>
+        <p data-pt="Ligue qualquer controle do seu hardware a qualquer alvo da tela, com mapa salvo por projeto. No teclado, a grade responde em ZXCV / ASDF / QWER / 1234."
+           data-en="Bind any control of your hardware to any target on screen, with a map saved per project. On the keyboard, the grid answers in ZXCV / ASDF / QWER / 1234.">Ligue qualquer controle do seu hardware a qualquer alvo da tela, com mapa salvo por projeto. No teclado, a grade responde em ZXCV / ASDF / QWER / 1234.</p></div>
+    </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- =============================================================== SPECS -->
+  <section id="specs" class="plate">
+    <div class="wrap">
+      <p class="k rail" data-pt="Ficha técnica" data-en="Tech sheet">Ficha técnica</p>
+      <div>
+    <h2 data-pt="Especificações reais, sem asterisco." data-en="Real specifications, no asterisk.">Especificações reais, sem asterisco.</h2>
+    <table>
+      <tbody>
+      <tr><th data-pt="Pads" data-en="Pads">Pads</th><td data-pt="<b>64</b> — 16 por banco em <b>4 bancos</b> (A/B/C/D), endereço global 01–64" data-en="<b>64</b> — 16 per bank across <b>4 banks</b> (A/B/C/D), global address 01–64"><b>64</b> — 16 por banco em <b>4 bancos</b> (A/B/C/D), endereço global 01–64</td></tr>
+      <tr><th data-pt="Vozes" data-en="Voices">Vozes</th><td data-pt="<b>24 vozes</b> com roubo de voz; POLY ou MONO por pad" data-en="<b>24 voices</b> with voice stealing; POLY or MONO per pad"><b>24 vozes</b> com roubo de voz; POLY ou MONO por pad</td></tr>
+      <tr><th data-pt="Por pad" data-en="Per pad">Por pad</th><td data-pt="Envelope AHDSR · PITCH ±24 semitons · LEN 25–400% (WSOLA) · SHOT/GATE · loop de sustentação com crossfade 1–50 ms · filtro LP/HP ressonante · 16 grupos de CHOKE · swing e humanize" data-en="AHDSR envelope · PITCH ±24 semitones · LEN 25–400% (WSOLA) · SHOT/GATE · sustain loop with 1–50 ms crossfade · resonant LP/HP filter · 16 CHOKE groups · swing and humanize">Envelope AHDSR · PITCH ±24 semitons · LEN 25–400% (WSOLA) · SHOT/GATE · loop de sustentação com crossfade 1–50 ms · filtro LP/HP ressonante · 16 grupos de CHOKE · swing e humanize</td></tr>
+      <tr><th data-pt="Mesa" data-en="Mixer">Mesa</th><td data-pt="<b>19 strips</b> (16 canais + MASTER + SEND A/B) · <b>10 slots</b> de rack por strip" data-en="<b>19 strips</b> (16 channels + MASTER + SEND A/B) · <b>10 rack slots</b> per strip"><b>19 strips</b> (16 canais + MASTER + SEND A/B) · <b>10 slots</b> de rack por strip</td></tr>
+      <tr><th data-pt="Efeitos" data-en="Effects">Efeitos</th><td data-pt="<b>23 módulos internos</b> <small>(UTILITY, FILTER, DELAY, REVERB, DRIVE, BITCRUSH, CHORUS, VINYL SIM, COMPRESSOR, LIMITER, PARAMETRIC EQ, STEREO ADJ, SIDECHAIN RC, PHASER/FLANGER, TAPE DECK, SP-303 COMP, SP-404 COMP, SP-1200, MPC 60, MPC 3000, MPC 2000XL, GLUE COMP, AUTO FILTER)</small> + hospedagem <b>VST3</b>" data-en="<b>23 built-in modules</b> <small>(UTILITY, FILTER, DELAY, REVERB, DRIVE, BITCRUSH, CHORUS, VINYL SIM, COMPRESSOR, LIMITER, PARAMETRIC EQ, STEREO ADJ, SIDECHAIN RC, PHASER/FLANGER, TAPE DECK, SP-303 COMP, SP-404 COMP, SP-1200, MPC 60, MPC 3000, MPC 2000XL, GLUE COMP, AUTO FILTER)</small> + <b>VST3</b> hosting"><b>23 módulos internos</b> <small>(UTILITY, FILTER, DELAY, REVERB, DRIVE, BITCRUSH, CHORUS, VINYL SIM, COMPRESSOR, LIMITER, PARAMETRIC EQ, STEREO ADJ, SIDECHAIN RC, PHASER/FLANGER, TAPE DECK, SP-303 COMP, SP-404 COMP, SP-1200, MPC 60, MPC 3000, MPC 2000XL, GLUE COMP, AUTO FILTER)</small> + hospedagem <b>VST3</b></td></tr>
+      <tr><th data-pt="DIRTY" data-en="DIRTY">DIRTY</th><td data-pt="Cadeia própria de <b>6 blocos</b> · RATE (PITCH livre e BPM MATCH) · conversão de taxa WindowedSinc · BAKE TO PAD e EXPORT FILE" data-en="Its own <b>6-slot</b> chain · RATE (free PITCH and BPM MATCH) · WindowedSinc rate conversion · BAKE TO PAD and EXPORT FILE">Cadeia própria de <b>6 blocos</b> · RATE (PITCH livre e BPM MATCH) · conversão de taxa WindowedSinc · BAKE TO PAD e EXPORT FILE</td></tr>
+      <tr><th data-pt="Importa" data-en="Imports">Importa</th><td><b>WAV · AIFF · FLAC · OGG Vorbis · MP3</b></td></tr>
+      <tr><th data-pt="Exporta" data-en="Exports">Exporta</th><td data-pt="<b>WAV</b> em 16 bits (com dither TPDF), 24 bits e 32 bits float · render em MASTER MIX, STEMS (canais) ou STEMS (pads); 1× / 2× / 4× / 8× voltas; WET ou DRY; cauda de +2,0 s" data-en="<b>WAV</b> at 16-bit (TPDF dither), 24-bit and 32-bit float · render as MASTER MIX, STEMS (channels) or STEMS (pads); 1× / 2× / 4× / 8× loop passes; WET or DRY; +2.0 s tail"><b>WAV</b> em 16 bits (com dither TPDF), 24 bits e 32 bits float · render em MASTER MIX, STEMS (canais) ou STEMS (pads); 1× / 2× / 4× / 8× voltas; WET ou DRY; cauda de +2,0 s</td></tr>
+      <tr><th data-pt="Taxas e bloco" data-en="Rates and buffer">Taxas e bloco</th><td data-pt="De 44,1 a <b>192 kHz</b> e blocos de 64 a <b>4096</b> amostras — conforme o que a sua placa oferece" data-en="From 44.1 up to <b>192 kHz</b> and buffers from 64 to <b>4096</b> samples — as your interface offers">De 44,1 a <b>192 kHz</b> e blocos de 64 a <b>4096</b> amostras — conforme o que a sua placa oferece</td></tr>
+      <tr><th data-pt="Windows" data-en="Windows">Windows</th><td data-pt="10/11 <b>64-bit</b> · WASAPI (compartilhado, exclusivo, low latency) e DirectSound · <b>ASIO</b> no build compilado com o SDK da Steinberg · captura do sistema por WASAPI Loopback" data-en="10/11 <b>64-bit</b> · WASAPI (shared, exclusive, low latency) and DirectSound · <b>ASIO</b> in builds compiled with the Steinberg SDK · system capture via WASAPI Loopback">10/11 <b>64-bit</b> · WASAPI (compartilhado, exclusivo, low latency) e DirectSound · <b>ASIO</b> no build compilado com o SDK da Steinberg · captura do sistema por WASAPI Loopback</td></tr>
+      <tr><th data-pt="Linux" data-en="Linux">Linux</th><td data-pt="x86_64 · <b>ALSA</b> e <b>JACK</b> · pacote .tar.gz / .zip (sem instalador)" data-en="x86_64 · <b>ALSA</b> and <b>JACK</b> · .tar.gz / .zip package (no installer)">x86_64 · <b>ALSA</b> e <b>JACK</b> · pacote .tar.gz / .zip (sem instalador)</td></tr>
+      <tr><th data-pt="Motor" data-en="Engine">Motor</th><td data-pt="C++17 e JUCE 8 · thread de áudio em tempo real <b>sem lock e sem alocação</b> (fila SPSC lock-free, parâmetros atômicos) · verificado por auditoria de alocação e pela suíte sob AddressSanitizer" data-en="C++17 and JUCE 8 · real-time audio thread with <b>no locks and no allocations</b> (lock-free SPSC queue, atomic parameters) · checked by an allocation audit and by the test suite under AddressSanitizer">C++17 e JUCE 8 · thread de áudio em tempo real <b>sem lock e sem alocação</b> (fila SPSC lock-free, parâmetros atômicos) · verificado por auditoria de alocação e pela suíte sob AddressSanitizer</td></tr>
+      <tr><th data-pt="Projeto" data-en="Project">Projeto</th><td data-pt="Uma pasta: arquivo <b>.plp</b> + material. Tudo o que você programa volta no Abrir — incluindo a mesa, o mapa MIDI e o tema." data-en="One folder: a <b>.plp</b> file + media. Everything you program comes back on Open — including the desk, the MIDI map and the theme.">Uma pasta: arquivo <b>.plp</b> + material. Tudo o que você programa volta no Abrir — incluindo a mesa, o mapa MIDI e o tema.</td></tr>
+      <tr><th data-pt="Licença" data-en="License">Licença</th><td data-pt="<b>Gratuito.</b> Sem instalador, sem registro e sem checagem de licença pela internet." data-en="<b>Free.</b> No installer, no registration and no online license check."><b>Gratuito.</b> Sem instalador, sem registro e sem checagem de licença pela internet.</td></tr>
+      </tbody>
+    </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================ DOWNLOAD -->
+  <section id="download" class="zone">
+    <div class="wrap">
+      <p class="k" data-pt="Download" data-en="Download">Download</p>
+    <h2>Bap 1.0.0</h2>
+    <p class="sub" data-pt="Um binário, uma pasta, nenhuma instalação. Escolha a sua plataforma."
+       data-en="One binary, one folder, no installation. Pick your platform.">Um binário, uma pasta, nenhuma instalação. Escolha a sua plataforma.</p>
+    <div class="dl">
+      <div class="pkg">
+        <h3 class="ser">Windows 10 / 11 · 64-bit</h3>
+        <p data-pt="Pacote .zip com o executável. WASAPI (compartilhado, exclusivo e low latency) e DirectSound; ASIO quando o pacote é compilado com o SDK da Steinberg. Captura do áudio do sistema por loopback." data-en=".zip package with the executable. WASAPI (shared, exclusive and low latency) and DirectSound; ASIO when the package is compiled with the Steinberg SDK. System audio capture via loopback.">Pacote .zip com o executável. WASAPI (compartilhado, exclusivo e low latency) e DirectSound; ASIO quando o pacote é compilado com o SDK da Steinberg. Captura do áudio do sistema por loopback.</p>
+        <!-- O pacote publicado. O contador le' o NOME no fim deste href: e' a mesma
+             chave que o clique usa, entao o numero exibido nao pode divergir do
+             arquivo que o botao entrega. Ao subir outra versao, troque o href --
+             o contador acompanha sozinho. -->
+        <a class="btn primary" href="https://github.com/guigurt22041998/bap-downloads/releases/download/v1.0.0/Bap-1.0.0-win64.zip" data-pt="Baixar para Windows" data-en="Download for Windows">Baixar para Windows</a>
+        <p class="dlcount" hidden><b>0</b> <span data-pt="baixados" data-en="downloads">baixados</span></p>
+      </div>
+      <div class="pkg">
+        <h3 class="ser">Linux · x86_64</h3>
+        <p data-pt="Pacote .tar.gz (e .zip) com o binário compilado com ALSA e JACK. Sem instalador: descompacte e rode." data-en=".tar.gz (and .zip) package with the binary built against ALSA and JACK. No installer: unpack and run.">Pacote .tar.gz (e .zip) com o binário compilado com ALSA e JACK. Sem instalador: descompacte e rode.</p>
+        <!-- Mesma regra do cartao Windows: o contador le' o nome no fim do href.
+             Aqui o botao entrega o .zip; o .tar.gz da mesma Release e' outro
+             arquivo, e o GitHub o conta separado -- por isso ele nao entra neste
+             numero (some os dois se a conta tiver de ser do Linux inteiro). -->
+        <a class="btn" href="https://github.com/guigurt22041998/bap-downloads/releases/download/v1.0.0/Bap-1.0.0-linux-x86_64.zip" data-pt="Baixar para Linux" data-en="Download for Linux">Baixar para Linux</a>
+        <p class="dlcount" hidden><b>0</b> <span data-pt="baixados" data-en="downloads">baixados</span></p>
+      </div>
+    </div>
+    <div class="warn" data-pt="<b>Sem assinatura de código:</b> na primeira execução o Windows pode mostrar o aviso do SmartScreen (&quot;editor desconhecido&quot;). É o comportamento normal de um binário sem assinatura paga — o app não pede licença, não valida nada pela internet e não instala serviços."
+        data-en="<b>No code signing:</b> on the first run Windows may show the SmartScreen warning (&quot;unknown publisher&quot;). That is the normal behaviour of an unsigned binary — the app asks for no license, validates nothing online and installs no services."><b>Sem assinatura de código:</b> na primeira execução o Windows pode mostrar o aviso do SmartScreen (&quot;editor desconhecido&quot;). É o comportamento normal de um binário sem assinatura paga — o app não pede licença, não valida nada pela internet e não instala serviços.</div>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <div class="wrap fr">
+    <div class="mono">Bap by chapa <span data-pt="v1.0.0" data-en="v1.0.0">v1.0.0</span> · C++17 · JUCE 8</div>
+    <div class="mono" data-pt="Feito para beatmakers. Grátis." data-en="Made for beatmakers. Free.">Feito para beatmakers. Grátis.</div>
+  </div>
+</footer>
+
+<div class="lb" id="lb" role="dialog" aria-modal="true" aria-label="Imagem ampliada"><button id="lbclose" data-pt="Fechar" data-en="Close">Fechar</button><img id="lbimg" alt=""></div>
+
+<!-- A doacao flutuante. O botao vem ANTES do cartao no DOM (o Tab vai do botao
+     para o PayPal, que e' o caminho util) e a coluna e' `column-reverse`, entao
+     o cartao aparece ACIMA dele na tela -- ancorado pelo `bottom`, o conjunto
+     cresce para cima e nada muda de lugar quando o cartao abre. -->
+<div class="fab">
+  <button class="btn outline" id="fabbtn" type="button" aria-expanded="false" aria-controls="fabcard" data-pt="Apoie o Bap" data-en="Support Bap">Apoie o Bap</button>
+  <div class="card" id="fabcard" hidden>
+    <p class="k" data-pt="Apoie este projeto" data-en="Support this project">Apoie este projeto</p>
+    <p data-pt="O Bap foi feito por uma pessoa só. Todo o valor arrecadado vai para o plano de levar o software para celular e, mais adiante, para um Raspberry rodando sozinho (standalone), sem computador."
+       data-en="Bap was built by a single person. Every donation goes to the plan of bringing the software to mobile and, further ahead, to a Raspberry running on its own (standalone), no computer needed.">O Bap foi feito por uma pessoa só. Todo o valor arrecadado vai para o plano de levar o software para celular e, mais adiante, para um Raspberry rodando sozinho (standalone), sem computador.</p>
+    <form action="https://www.paypal.com/donate" method="post" target="_top">
+      <input type="hidden" name="business" value="2ZV8TGNQ44R5U">
+      <input type="hidden" name="no_recurring" value="0">
+      <input type="hidden" name="item_name" value="Any donation will be received as a token of appreciation for the time spent developing the software.">
+      <input type="hidden" name="currency_code" value="BRL">
+      <button type="submit" class="btn outline" data-pt="Doar com PayPal" data-en="Donate with PayPal">Doar com PayPal</button>
+    </form>
+  </div>
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  /* ------------------------------------------------------- idioma PT / EN -- */
+  var root = document.documentElement;
+  var btnPt = document.getElementById('pt'), btnEn = document.getElementById('en');
+
+  function applyLang(lang){
+    root.setAttribute('data-lang', lang);
+    root.setAttribute('lang', lang === 'pt' ? 'pt-BR' : 'en');
+    document.querySelectorAll('[data-pt]').forEach(function(el){
+      var v = el.getAttribute('data-' + lang);
+      if (v !== null) el.innerHTML = v;
+    });
+    btnPt.setAttribute('aria-pressed', String(lang === 'pt'));
+    btnEn.setAttribute('aria-pressed', String(lang === 'en'));
+    // O titulo da pagina vive SO' no <title> do <head>: e' o nome do produto e nao
+    // tem texto traduzivel, entao o idioma nao mexe nele. Antes o script reescrevia
+    // `document.title` aqui em duas versoes — e como este bloco roda no load, o
+    // <title> do <head> nunca chegava a' aba.
+    try { localStorage.setItem('bap.lang', lang); } catch(e){}
+  }
+
+  btnPt.addEventListener('click', function(){ applyLang('pt'); });
+  btnEn.addEventListener('click', function(){ applyLang('en'); });
+
+  var saved = null;
+  try { saved = localStorage.getItem('bap.lang'); } catch(e){}
+  if (!saved){
+    saved = (navigator.language || '').toLowerCase().indexOf('pt') === 0 ? 'pt' : 'en';
+  }
+  applyLang(saved);
+
+  /* ----------------------------------------------------------------- menu -- */
+  var burger = document.getElementById('burger'), nav = document.getElementById('nav');
+  function setMenu(open){
+    nav.classList.toggle('open', open);
+    burger.setAttribute('aria-expanded', String(open));
+  }
+  burger.addEventListener('click', function(){ setMenu(!nav.classList.contains('open')); });
+  nav.addEventListener('click', function(e){ if (e.target.tagName === 'A') setMenu(false); });
+
+  /* ------------------------------------------------------------- lightbox -- */
+  /* A moldura e' um BOTAO (.zoom): o teclado alcanca, o Enter amplia. O foco vai para o
+     botao Fechar ao abrir e VOLTA para a imagem que abriu ao fechar; a imagem ampliada
+     herda o alt do print. Esc fecha. */
+  var lb = document.getElementById('lb'), lbimg = document.getElementById('lbimg');
+  var lbclose = document.getElementById('lbclose'), lastFocus = null;
+  function openLb(btn){
+    var img = btn.querySelector('img');
+    lbimg.src = img.src;
+    lbimg.alt = img.alt;
+    lastFocus = btn;
+    lb.classList.add('on');
+    lbclose.focus();
+  }
+  function closeLb(){
+    lb.classList.remove('on');
+    lbimg.removeAttribute('src');
+    lbimg.alt = '';
+    if (lastFocus) lastFocus.focus();
+  }
+  document.querySelectorAll('.zoom').forEach(function(btn){
+    btn.addEventListener('click', function(){ openLb(btn); });
+  });
+  lbclose.addEventListener('click', closeLb);
+  lb.addEventListener('click', function(e){ if (e.target === lb || e.target === lbimg) closeLb(); });
+  document.addEventListener('keydown', function(e){ if (e.key === 'Escape' && lb.classList.contains('on')) closeLb(); });
+
+  /* ----------------------------------------------- contador de downloads (real) --
+     O numero sai de quem SERVE o arquivo: a API publica do GitHub, na Release onde
+     os .zip moram (repositorio so' de downloads; o codigo segue privado). A chave e'
+     o NOME no fim do href do proprio botao -- o contador e o clique leem o mesmo
+     nome de arquivo, entao o numero exibido nao pode divergir do pacote entregue.
+     Se a API nao responder, a linha fica ESCONDIDA: numero inventado numa pagina de
+     download e' pior que numero nenhum. A leitura e' guardada 5 minutos na sessao
+     porque a API anonima do GitHub da' 60 leituras por hora por IP.
+     ATENCAO ao lugar deste bloco: o `_abtest.js` faz `eval` de TUDO o que vem
+     DEPOIS do comentario do A/B, com um `document` de mentira que so' conhece os
+     nos do A/B -- por isso o contador mora ANTES dele. */
+  var RELEASES_URL = 'https://api.github.com/repos/guigurt22041998/bap-downloads/releases?per_page=5';
+  var CACHE_KEY = 'bap.downloads', CACHE_MS = 5 * 60 * 1000;
+  var counts = null;                        // { 'Bap-...-win64.zip': n, ... }
+
+  function paintCounts(){
+    if (!counts) return;
+    var lang = root.getAttribute('data-lang') === 'pt' ? 'pt-BR' : 'en-US';
+    document.querySelectorAll('.pkg').forEach(function(pkg){
+      var a = pkg.querySelector('a.btn'), row = pkg.querySelector('.dlcount');
+      if (!a || !row) return;
+      var file = a.getAttribute('href').split('/').pop();
+      if (!(file in counts)) return;        // asset que nao existe: nada a dizer
+      var b = row.querySelector('b');
+      if (b) b.textContent = counts[file].toLocaleString(lang);
+      row.hidden = false;
+    });
+  }
+  function harvest(rels){
+    var map = {};
+    (rels || []).forEach(function(rel){
+      ((rel && rel.assets) || []).forEach(function(at){
+        if (at && at.name) map[at.name] = at.download_count || 0;
+      });
+    });
+    return map;
+  }
+  (function(){
+    var kept = null;
+    try { kept = JSON.parse(sessionStorage.getItem(CACHE_KEY) || 'null'); } catch(e){}
+    if (kept && Date.now() - kept.t < CACHE_MS){ counts = kept.m; paintCounts(); return; }
+    if (typeof fetch !== 'function') return;                 // sem fetch: sem numero
+    fetch(RELEASES_URL, { headers: { Accept: 'application/vnd.github+json' } })
+      .then(function(r){ return r.ok ? r.json() : null; })
+      .then(function(rels){
+        if (!rels) return;
+        counts = harvest(rels);
+        try { sessionStorage.setItem(CACHE_KEY, JSON.stringify({ t: Date.now(), m: counts })); } catch(e){}
+        paintCounts();
+      })
+      .catch(function(){});                  // a linha continua escondida
+  })();
+
+  // O numero e' um numero: ao trocar de idioma ele se reescreve no separador da
+  // lingua (1.234 em pt, 1,234 em en). Estes ouvintes entram DEPOIS do applyLang
+  // nos mesmos botoes, entao leem o idioma ja' trocado.
+  btnPt.addEventListener('click', paintCounts);
+  btnEn.addEventListener('click', paintCounts);
+
+  /* ------------------------------------------------- doacao flutuante (cartao) --
+     O convite acompanha a pagina inteira: o texto que morava no hero vive agora
+     dentro do cartao, atras do botao. Um toque abre, o mesmo toque fecha, o Esc
+     fecha e um clique fora fecha. O clique DENTRO do cartao nao propaga, senao o
+     ouvinte de fora fecharia o cartao antes de o PayPal receber o toque.
+     A ATENCAO DO LUGAR vale aqui tambem: o `_abtest.js` faz `eval` de TUDO o que
+     vem DEPOIS do comentario do A/B, com um `document` de mentira que so' conhece
+     os nos do A/B -- este bloco mora antes dele, junto com o contador. */
+  var fabBtn = document.getElementById('fabbtn'), fabCard = document.getElementById('fabcard');
+  if (fabBtn && fabCard){
+    function openFab(){ fabCard.hidden = false; fabBtn.setAttribute('aria-expanded', 'true'); }
+    function closeFab(){ fabCard.hidden = true; fabBtn.setAttribute('aria-expanded', 'false'); }
+    fabBtn.addEventListener('click', function(){ fabCard.hidden ? openFab() : closeFab(); });
+    fabCard.addEventListener('click', function(e){ e.stopPropagation(); });
+    document.addEventListener('click', function(e){
+      if (!fabCard.hidden && e.target !== fabBtn) closeFab();
+    });
+    document.addEventListener('keydown', function(e){
+      if (e.key === 'Escape' && !fabCard.hidden) closeFab();
+    });
+  }
+
+  /* ------------------------------------------------------- audio A/B (seco x cadeia) --
+     Dois players ESCONDIDOS e um par de botoes que E' o transporte: um lado toca por vez.
+     Apertar o outro lado TROCA na hora, e a TROCA LEVA O PONTO DE ESCUTA: o tempo do que
+     estava tocando vai para o lado novo antes de o play sair — sem isso o A/B nao prova
+     nada. Apertar o lado que ja' esta' tocando PARA. */
+  var wet = document.getElementById('abwet'), dry = document.getElementById('abdry');
+  if (wet && dry){
+    var bWet = document.getElementById('abwetbtn'), bDry = document.getElementById('abdrybtn');
+    var dead = document.getElementById('abdead'), bar = document.getElementById('abbar'), clock = document.getElementById('abtime');
+    var cur = null;
+
+    function mmss(s){
+      if (!isFinite(s) || s < 0) return '0:00';
+      var m = Math.floor(s / 60), r = Math.floor(s % 60);
+      return m + ':' + (r < 10 ? '0' : '') + r;
+    }
+    function paint(){
+      var el = cur || dry, d = isFinite(el.duration) ? el.duration : 0;
+      if (bar) bar.style.width = (d > 0 ? Math.min(100, (el.currentTime / d) * 100) : 0) + '%';
+      if (clock) clock.textContent = mmss(el.currentTime) + ' / ' + mmss(d);
+      bDry.setAttribute('aria-pressed', String(!!cur && cur === dry && !dry.paused));
+      bWet.setAttribute('aria-pressed', String(!!cur && cur === wet && !wet.paused));
+    }
+    function go(side){
+      if (cur === side && !side.paused){ side.pause(); cur = null; paint(); return; }   // 2o toque = parar
+      var at = cur ? cur.currentTime : side.currentTime;
+      if (cur && cur !== side) cur.pause();
+      cur = side;
+      function seek(){ var d = side.duration; side.currentTime = (isFinite(d) && d > 0) ? Math.min(at, d - 0.02) : at; }
+      if (side.readyState >= 1) seek();
+      else side.addEventListener('loadedmetadata', seek, { once: true });
+      var p = side.play();            // ainda dentro do clique: a politica de autoplay e' satisfeita
+      if (p && p.catch) p.catch(function(){ cur = null; if (dead) dead.hidden = false; paint(); });
+      paint();
+    }
+    function ended(){ if (cur) cur.currentTime = 0; cur = null; paint(); }
+
+    bDry.addEventListener('click', function(){ go(dry); });
+    bWet.addEventListener('click', function(){ go(wet); });
+    dry.addEventListener('loadedmetadata', paint); wet.addEventListener('loadedmetadata', paint);
+    dry.addEventListener('timeupdate', paint);     wet.addEventListener('timeupdate', paint);
+    dry.addEventListener('ended', ended);          wet.addEventListener('ended', ended);
+
+    // Sem os arquivos na pasta (ou num formato que este navegador nao decodifique), o aviso
+    // entra no lugar do transporte.
+    function watch(node){ node.addEventListener('error', function(){ if (dead) dead.hidden = false; }); }
+    watch(dry); watch(wet);
+    paint();
+  }
+})();
+</script>
+</body>
+</html>
