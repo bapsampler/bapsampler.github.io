@@ -826,7 +826,7 @@ footer .mono{font-size:11.5px;letter-spacing:.1em;text-transform:uppercase}
         <!-- O pacote publicado. O contador le' o NOME no fim deste href: e' a mesma
              chave que o clique usa, entao o numero exibido nao pode divergir do
              arquivo que o botao entrega. Ao subir outra versao, troque o href --
-             o contador acompanha sozinho. -->
+             o contador acompanha sozinho (e o numero SOMA as versoes: subir nao zera). -->
         <a class="btn primary" href="https://github.com/bapsampler/bap-downloads/releases/download/v1.0.2/Bap-1.0.2-win64.zip" data-pt="Baixar para Windows" data-en="Download for Windows">Baixar para Windows</a>
         <p class="dlcount" hidden><b>0</b> <span data-pt="baixados" data-en="downloads">baixados</span></p>
       </div>
@@ -968,8 +968,8 @@ footer .mono{font-size:11.5px;letter-spacing:.1em;text-transform:uppercase}
   /* ----------------------------------------------- contador de downloads (real) --
      O numero sai de quem SERVE o arquivo: a API publica do GitHub, na Release onde
      os .zip moram (repositorio so' de downloads; o codigo segue privado). A chave e'
-     o NOME no fim do href do proprio botao -- o contador e o clique leem o mesmo
-     nome de arquivo, entao o numero exibido nao pode divergir do pacote entregue.
+     O nome no fim do href diz QUAL familia o botao entrega ('...-win64.zip'), e o
+     numero exibido e' a SOMA dessa familia nas versoes -- subir de versao nao zera.
      Se a API nao responder, a linha fica ESCONDIDA: numero inventado numa pagina de
      download e' pior que numero nenhum. A leitura e' guardada 5 minutos na sessao
      porque a API anonima do GitHub da' 60 leituras por hora por IP.
@@ -978,7 +978,7 @@ footer .mono{font-size:11.5px;letter-spacing:.1em;text-transform:uppercase}
      nos do A/B -- por isso o contador mora ANTES dele. */
   var RELEASES_URL = 'https://api.github.com/repos/bapsampler/bap-downloads/releases?per_page=5';
   var CACHE_KEY = 'bap.downloads', CACHE_MS = 5 * 60 * 1000;
-  var counts = null;                        // { 'Bap-...-win64.zip': n, ... }
+  var counts = null;                        // { 'Bap-1.0.0-win64.zip': n, ... } todas as versoes
 
   function paintCounts(){
     if (!counts) return;
@@ -987,11 +987,25 @@ footer .mono{font-size:11.5px;letter-spacing:.1em;text-transform:uppercase}
       var a = pkg.querySelector('a.btn'), row = pkg.querySelector('.dlcount');
       if (!a || !row) return;
       var file = a.getAttribute('href').split('/').pop();
-      if (!(file in counts)) return;        // asset que nao existe: nada a dizer
+      var total = totalDaFamilia(file);
+      if (total === null) return;            // familia que ainda nao existe: nada a dizer
       var b = row.querySelector('b');
-      if (b) b.textContent = counts[file].toLocaleString(lang);
+      if (b) b.textContent = total.toLocaleString(lang);
       row.hidden = false;
     });
+  }
+  // O numero do botao e' o TOTAL da familia, somando as versoes: o
+  // 'Bap-1.0.2-win64.zip' conta junto o 'Bap-1.0.0-win64.zip'. Trocar de versao nao
+  // zera o que o publico ja' baixou. O nome do arquivo diz a familia: a versao sai
+  // da conta e o resto do nome (o alvo e o formato) fica.
+  function totalDaFamilia(file){
+    var m = file.match(/^(.+?)-[0-9][^-]*(.*)$/);
+    if (!m) return null;
+    var esc = function(s){ return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); };
+    var alvo = new RegExp('^' + esc(m[1]) + '-.*' + esc(m[2]) + '$');
+    var total = 0, achou = false;
+    for (var k in counts) { if (alvo.test(k)) { total += counts[k]; achou = true; } }
+    return achou ? total : null;
   }
   function harvest(rels){
     var map = {};
