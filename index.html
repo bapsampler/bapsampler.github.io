@@ -385,6 +385,11 @@ tr:hover td{background:rgba(233,226,210,.012)}
   color:var(--text);margin:0 0 8px}
 .pkg p{font-size:13.5px;color:var(--dim)}
 .pkg .btn{margin-top:6px}
+/* O selo do pacote principal: etiqueta de uma linha no proprio titulo do cartao,
+   na tinta do `.ser` (--gold2 sobre a face do modulo ja' esta' na auditoria de
+   contraste). Nao nasce um segundo botao solido: `.btn.primary` continua sendo UM. */
+.pkg .rec{margin-left:9px;padding:3px 7px;border:1px solid var(--gold);border-radius:5px;color:var(--gold2);
+  font-family:var(--mono);font-size:10.5px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;vertical-align:2px}
 /* O contador de downloads: o numero sai da API publica do GitHub, na Release onde
    os .zip moram (repositorio so' de downloads; o codigo segue privado). A linha
    nasce ESCONDIDA e so' aparece quando o numero chega -- numero que a pagina
@@ -801,8 +806,9 @@ footer .mono{font-size:11.5px;letter-spacing:.1em;text-transform:uppercase}
       <tr><th data-pt="Importa" data-en="Imports">Importa</th><td><b>WAV · AIFF · FLAC · OGG Vorbis · MP3</b></td></tr>
       <tr><th data-pt="Exporta" data-en="Exports">Exporta</th><td data-pt="<b>WAV</b> em 16 bits (com dither TPDF), 24 bits e 32 bits float · render em MASTER MIX, STEMS (canais) ou STEMS (pads); 1× / 2× / 4× / 8× voltas; WET ou DRY; cauda de +2,0 s" data-en="<b>WAV</b> at 16-bit (TPDF dither), 24-bit and 32-bit float · render as MASTER MIX, STEMS (channels) or STEMS (pads); 1× / 2× / 4× / 8× loop passes; WET or DRY; +2.0 s tail"><b>WAV</b> em 16 bits (com dither TPDF), 24 bits e 32 bits float · render em MASTER MIX, STEMS (canais) ou STEMS (pads); 1× / 2× / 4× / 8× voltas; WET ou DRY; cauda de +2,0 s</td></tr>
       <tr><th data-pt="Taxas e bloco" data-en="Rates and buffer">Taxas e bloco</th><td data-pt="De 44,1 a <b>192 kHz</b> e blocos de 64 a <b>4096</b> amostras — conforme o que a sua placa oferece" data-en="From 44.1 up to <b>192 kHz</b> and buffers from 64 to <b>4096</b> samples — as your interface offers">De 44,1 a <b>192 kHz</b> e blocos de 64 a <b>4096</b> amostras — conforme o que a sua placa oferece</td></tr>
-      <tr><th data-pt="Windows" data-en="Windows">Windows</th><td data-pt="10/11 <b>64-bit</b> · WASAPI (compartilhado, exclusivo, low latency) e DirectSound · <b>ASIO</b> no build compilado com o SDK da Steinberg · captura do sistema por WASAPI Loopback" data-en="10/11 <b>64-bit</b> · WASAPI (shared, exclusive, low latency) and DirectSound · <b>ASIO</b> in builds compiled with the Steinberg SDK · system capture via WASAPI Loopback">10/11 <b>64-bit</b> · WASAPI (compartilhado, exclusivo, low latency) e DirectSound · <b>ASIO</b> no build compilado com o SDK da Steinberg · captura do sistema por WASAPI Loopback</td></tr>
+      <tr><th data-pt="Windows" data-en="Windows">Windows</th><td data-pt="10/11 e <b>8.1</b> · <b>64-bit</b> · WASAPI (compartilhado, exclusivo, low latency) e DirectSound · <b>ASIO</b> no build compilado com o SDK da Steinberg · captura do sistema por WASAPI Loopback — em dois pacotes, porque o principal exige Windows 10" data-en="10/11 and <b>8.1</b> · <b>64-bit</b> · WASAPI (shared, exclusive, low latency) and DirectSound · <b>ASIO</b> in builds compiled with the Steinberg SDK · system capture via WASAPI Loopback — in two packages, because the main one requires Windows 10">10/11 e <b>8.1</b> · <b>64-bit</b> · WASAPI (compartilhado, exclusivo, low latency) e DirectSound · <b>ASIO</b> no build compilado com o SDK da Steinberg · captura do sistema por WASAPI Loopback — em dois pacotes, porque o principal exige Windows 10</td></tr>
       <tr><th data-pt="Linux" data-en="Linux">Linux</th><td data-pt="x86_64 · <b>ALSA</b> e <b>JACK</b> · pacote .tar.gz / .zip (sem instalador)" data-en="x86_64 · <b>ALSA</b> and <b>JACK</b> · .tar.gz / .zip package (no installer)">x86_64 · <b>ALSA</b> e <b>JACK</b> · pacote .tar.gz / .zip (sem instalador)</td></tr>
+      <tr><th data-pt="macOS" data-en="macOS">macOS</th><td data-pt="11 (Big Sur) ou mais novo · <b>universal</b> (Intel e Apple Silicon) · <b>CoreAudio</b> · .zip sem instalador · <b>sem captura do áudio do sistema</b> (o loopback do Windows não existe no Mac)" data-en="11 (Big Sur) or newer · <b>universal</b> (Intel and Apple Silicon) · <b>CoreAudio</b> · .zip with no installer · <b>no system audio capture</b> (the Windows loopback does not exist on the Mac)">11 (Big Sur) ou mais novo · <b>universal</b> (Intel e Apple Silicon) · <b>CoreAudio</b> · .zip sem instalador · <b>sem captura do áudio do sistema</b> (o loopback do Windows não existe no Mac)</td></tr>
       <tr><th data-pt="Motor" data-en="Engine">Motor</th><td data-pt="C++17 e JUCE 8 · thread de áudio em tempo real <b>sem lock e sem alocação</b> (fila SPSC lock-free, parâmetros atômicos) · verificado por auditoria de alocação e pela suíte sob AddressSanitizer" data-en="C++17 and JUCE 8 · real-time audio thread with <b>no locks and no allocations</b> (lock-free SPSC queue, atomic parameters) · checked by an allocation audit and by the test suite under AddressSanitizer">C++17 e JUCE 8 · thread de áudio em tempo real <b>sem lock e sem alocação</b> (fila SPSC lock-free, parâmetros atômicos) · verificado por auditoria de alocação e pela suíte sob AddressSanitizer</td></tr>
       <tr><th data-pt="Projeto" data-en="Project">Projeto</th><td data-pt="Uma pasta: arquivo <b>.plp</b> + material. Tudo o que você programa volta no Abrir — incluindo a mesa, o mapa MIDI e o tema." data-en="One folder: a <b>.plp</b> file + media. Everything you program comes back on Open — including the desk, the MIDI map and the theme.">Uma pasta: arquivo <b>.plp</b> + material. Tudo o que você programa volta no Abrir — incluindo a mesa, o mapa MIDI e o tema.</td></tr>
       <tr><th data-pt="Licença" data-en="License">Licença</th><td data-pt="<b>Gratuito.</b> Sem instalador, sem registro e sem checagem de licença pela internet." data-en="<b>Free.</b> No installer, no registration and no online license check."><b>Gratuito.</b> Sem instalador, sem registro e sem checagem de licença pela internet.</td></tr>
@@ -821,13 +827,30 @@ footer .mono{font-size:11.5px;letter-spacing:.1em;text-transform:uppercase}
        data-en="One binary, one folder, no installation. Pick your platform.">Um binário, uma pasta, nenhuma instalação. Escolha a sua plataforma.</p>
     <div class="dl">
       <div class="pkg">
-        <h3 class="ser">Windows 10 / 11 · 64-bit</h3>
+        <h3 class="ser">Windows 10 / 11 · 64-bit <span class="rec" data-pt="recomendado" data-en="recommended">recomendado</span></h3>
         <p data-pt="Pacote .zip com o executável. WASAPI (compartilhado, exclusivo e low latency) e DirectSound; ASIO quando o pacote é compilado com o SDK da Steinberg. Captura do áudio do sistema por loopback." data-en=".zip package with the executable. WASAPI (shared, exclusive and low latency) and DirectSound; ASIO when the package is compiled with the Steinberg SDK. System audio capture via loopback.">Pacote .zip com o executável. WASAPI (compartilhado, exclusivo e low latency) e DirectSound; ASIO quando o pacote é compilado com o SDK da Steinberg. Captura do áudio do sistema por loopback.</p>
         <!-- O pacote publicado. O contador le' o NOME no fim deste href: e' a mesma
              chave que o clique usa, entao o numero exibido nao pode divergir do
              arquivo que o botao entrega. Ao subir outra versao, troque o href --
              o contador acompanha sozinho (e o numero SOMA as versoes: subir nao zera). -->
         <a class="btn primary" href="https://github.com/bapsampler/bap-downloads/releases/download/v1.0.2/Bap-1.0.2-win64.zip" data-pt="Baixar para Windows" data-en="Download for Windows">Baixar para Windows</a>
+        <p class="dlcount" hidden><b>0</b> <span data-pt="baixados" data-en="downloads">baixados</span></p>
+      </div>
+      <div class="pkg">
+        <h3 class="ser">Windows 8.1 · 64-bit</h3>
+        <p data-pt="Para quem está no Windows 8.1: o pacote principal não abre nele. Mesmos drivers, mesma captura do sistema por loopback — a única diferença é o canto de redimensionar, mais estreito num monitor com escala acima de 100%." data-en="For those on Windows 8.1: the main package does not open there. Same drivers, same system capture via loopback — the only difference is the resize corner, narrower on a monitor scaled above 100%.">Para quem está no Windows 8.1: o pacote principal não abre nele. Mesmos drivers, mesma captura do sistema por loopback — a única diferença é o canto de redimensionar, mais estreito num monitor com escala acima de 100%.</p>
+        <!-- Abre no 8.1 E no 10/11 (o desvio de DPI do JUCE nao muda nada no 10/11).
+             Quem mandou compilar foi tools\package_win81.bat; o script se recusa a
+             montar o pacote se a tabela de importacao exigir Windows 10. -->
+        <a class="btn" href="https://github.com/bapsampler/bap-downloads/releases/download/v1.0.2/Bap-1.0.2-win8.1-x64.zip" data-pt="Baixar para Windows 8.1" data-en="Download for Windows 8.1">Baixar para Windows 8.1</a>
+        <p class="dlcount" hidden><b>0</b> <span data-pt="baixados" data-en="downloads">baixados</span></p>
+      </div>
+      <div class="pkg">
+        <h3 class="ser">macOS · Intel e Apple Silicon</h3>
+        <p data-pt="Um pacote só, com as duas arquiteturas dentro: macOS 11 (Big Sur) ou mais novo. Áudio pelo CoreAudio. A assinatura é ad-hoc, sem certificado pago — na primeira abertura o macOS pede Ctrl+clique em Abrir. Não há captura do áudio do sistema: no Mac essa aba não existe." data-en="One package with both architectures inside: macOS 11 (Big Sur) or newer. Audio through CoreAudio. The signature is ad-hoc, with no paid certificate — on first launch macOS asks for Ctrl-click to Open. There is no system audio capture: on the Mac that tab does not exist.">Um pacote só, com as duas arquiteturas dentro: macOS 11 (Big Sur) ou mais novo. Áudio pelo CoreAudio. A assinatura é ad-hoc, sem certificado pago — na primeira abertura o macOS pede Ctrl+clique em Abrir. Não há captura do áudio do sistema: no Mac essa aba não existe.</p>
+        <!-- Quem compila e' o runner da nuvem (.github/workflows/macos.yml): binario
+             Apple nao se compila no Windows. O .zip preserva a assinatura ad-hoc. -->
+        <a class="btn" href="https://github.com/bapsampler/bap-downloads/releases/download/v1.0.2/Bap-1.0.2-macos-universal.zip" data-pt="Baixar para macOS" data-en="Download for macOS">Baixar para macOS</a>
         <p class="dlcount" hidden><b>0</b> <span data-pt="baixados" data-en="downloads">baixados</span></p>
       </div>
       <div class="pkg">
@@ -859,8 +882,8 @@ footer .mono{font-size:11.5px;letter-spacing:.1em;text-transform:uppercase}
             data-en="<b>SP-303 DOSAGE:</b> one knob moves five things — and at 0 the EQ goes flat."><b>DOSAGE do SP-303:</b> um botão só move cinco coisas — e em 0 o EQ fica plano.</li>
       </ul>
     </div>
-    <div class="warn" data-pt="<b>Sem assinatura de código:</b> na primeira execução o Windows pode mostrar o aviso do SmartScreen (&quot;editor desconhecido&quot;). É o comportamento normal de um binário sem assinatura paga — o app não pede licença, não valida nada pela internet e não instala serviços."
-        data-en="<b>No code signing:</b> on the first run Windows may show the SmartScreen warning (&quot;unknown publisher&quot;). That is the normal behaviour of an unsigned binary — the app asks for no license, validates nothing online and installs no services."><b>Sem assinatura de código:</b> na primeira execução o Windows pode mostrar o aviso do SmartScreen (&quot;editor desconhecido&quot;). É o comportamento normal de um binário sem assinatura paga — o app não pede licença, não valida nada pela internet e não instala serviços.</div>
+    <div class="warn" data-pt="<b>Sem assinatura de código:</b> na primeira execução o Windows pode mostrar o aviso do SmartScreen (&quot;editor desconhecido&quot;) e, no Mac, o Gatekeeper avisa que o desenvolvedor não pode ser verificado — abra com Ctrl+clique em Abrir, uma vez só. É o comportamento normal de um binário sem assinatura paga: o app não pede licença, não valida nada pela internet e não instala serviços."
+        data-en="<b>No code signing:</b> on the first run Windows may show the SmartScreen warning (&quot;unknown publisher&quot;) and, on the Mac, Gatekeeper warns that the developer cannot be verified — open it with Ctrl-click on Open, once. That is the normal behaviour of an unsigned binary: the app asks for no license, validates nothing online and installs no services."><b>Sem assinatura de código:</b> na primeira execução o Windows pode mostrar o aviso do SmartScreen (&quot;editor desconhecido&quot;) e, no Mac, o Gatekeeper avisa que o desenvolvedor não pode ser verificado — abra com Ctrl+clique em Abrir, uma vez só. É o comportamento normal de um binário sem assinatura paga: o app não pede licença, não valida nada pela internet e não instala serviços.</div>
     </div>
   </section>
 
