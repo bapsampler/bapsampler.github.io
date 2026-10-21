@@ -999,7 +999,9 @@ footer .mono{font-size:11.5px;letter-spacing:.1em;text-transform:uppercase}
      ATENCAO ao lugar deste bloco: o `_abtest.js` faz `eval` de TUDO o que vem
      DEPOIS do comentario do A/B, com um `document` de mentira que so' conhece os
      nos do A/B -- por isso o contador mora ANTES dele. */
-  var RELEASES_URL = 'https://api.github.com/repos/bapsampler/bap-downloads/releases?per_page=5';
+  // per_page=100: o total da familia soma TODAS as versoes. Com 5, a chegada
+  // de uma sexta Release empurraria a mais antiga para fora e o numero cairia.
+  var RELEASES_URL = 'https://api.github.com/repos/bapsampler/bap-downloads/releases?per_page=100';
   var CACHE_KEY = 'bap.downloads', CACHE_MS = 5 * 60 * 1000;
   var counts = null;                        // { 'Bap-1.0.0-win64.zip': n, ... } todas as versoes
 
